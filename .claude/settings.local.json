@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:electron:*)",
+      "Bash(npm run build:preload:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(npx webpack serve:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  }
+}
