@@ -10,7 +10,8 @@
       "Bash(npx tsc:*)",
       "Bash(node:*)",
       "Bash(npx webpack serve:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm start)"
     ],
     "deny": []
   }
