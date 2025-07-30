@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { runDatabaseTest } from './database/test';
-import { closeDatabase, accountsRepository } from './database';
+import { closeDatabase, accountsRepository, envelopeRepository } from './database';
 
 let mainWindow: BrowserWindow;
 
@@ -100,6 +100,111 @@ function setupIpcHandlers(): void {
       return accountsRepository.getBalanceByType(type);
     } catch (error) {
       throw new Error(`Failed to get balance by type: ${error}`);
+    }
+  });
+
+  ipcMain.handle('db:createMissingUnassignedEnvelopes', async () => {
+    try {
+      return accountsRepository.createMissingUnassignedEnvelopes();
+    } catch (error) {
+      throw new Error(`Failed to create missing unassigned envelopes: ${error}`);
+    }
+  });
+
+  // Envelope IPC handlers
+  ipcMain.handle('envelope:create', async (_, envelopeData) => {
+    try {
+      return envelopeRepository.createEnvelope(envelopeData);
+    } catch (error) {
+      throw new Error(`Failed to create envelope: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getById', async (_, id) => {
+    try {
+      return envelopeRepository.getEnvelopeById(id);
+    } catch (error) {
+      throw new Error(`Failed to get envelope by ID: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getAll', async () => {
+    try {
+      return envelopeRepository.getAllEnvelopes();
+    } catch (error) {
+      throw new Error(`Failed to get all envelopes: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getByAccountId', async (_, accountId) => {
+    try {
+      return envelopeRepository.getEnvelopesByAccountId(accountId);
+    } catch (error) {
+      throw new Error(`Failed to get envelopes by account ID: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getByType', async (_, type) => {
+    try {
+      return envelopeRepository.getEnvelopesByType(type);
+    } catch (error) {
+      throw new Error(`Failed to get envelopes by type: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getWithAccount', async () => {
+    try {
+      return envelopeRepository.getEnvelopesWithAccount();
+    } catch (error) {
+      throw new Error(`Failed to get envelopes with account info: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:update', async (_, id, updateData) => {
+    try {
+      return envelopeRepository.updateEnvelope(id, updateData);
+    } catch (error) {
+      throw new Error(`Failed to update envelope: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:delete', async (_, id) => {
+    try {
+      return envelopeRepository.deleteEnvelope(id);
+    } catch (error) {
+      throw new Error(`Failed to delete envelope: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:transfer', async (_, transferData) => {
+    try {
+      return envelopeRepository.transferBetweenEnvelopes(transferData);
+    } catch (error) {
+      throw new Error(`Failed to transfer between envelopes: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:transferHistory', async (_, envelopeId) => {
+    try {
+      return envelopeRepository.getTransferHistory(envelopeId);
+    } catch (error) {
+      throw new Error(`Failed to get transfer history: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:getAccountWithEnvelopes', async (_, accountId) => {
+    try {
+      return envelopeRepository.getAccountWithEnvelopes(accountId);
+    } catch (error) {
+      throw new Error(`Failed to get account with envelopes: ${error}`);
+    }
+  });
+
+  ipcMain.handle('envelope:validateIntegrity', async () => {
+    try {
+      return envelopeRepository.validateAccountEnvelopeIntegrity();
+    } catch (error) {
+      throw new Error(`Failed to validate account-envelope integrity: ${error}`);
     }
   });
 }

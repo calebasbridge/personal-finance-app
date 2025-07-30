@@ -16,6 +16,21 @@ export interface ElectronAPI {
     getByType: (type: string) => Promise<any[]>;
     update: (id: number, updateData: any) => Promise<any>;
     delete: (id: number) => Promise<boolean>;
+    createMissingUnassignedEnvelopes: () => Promise<{ created: number; errors: string[] }>;
+  };
+  envelopes: {
+    create: (envelopeData: any) => Promise<any>;
+    getAll: () => Promise<any[]>;
+    getById: (id: number) => Promise<any>;
+    getByAccountId: (accountId: number) => Promise<any[]>;
+    getByType: (type: 'cash' | 'debt') => Promise<any[]>;
+    getWithAccount: () => Promise<any[]>;
+    update: (id: number, updateData: any) => Promise<any>;
+    delete: (id: number) => Promise<boolean>;
+    transfer: (transferData: any) => Promise<any>;
+    getTransferHistory: (envelopeId?: number) => Promise<any[]>;
+    getAccountWithEnvelopes: (accountId: number) => Promise<any>;
+    validateIntegrity: () => Promise<any[]>;
   };
 }
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import './App.css';
 import DatabaseTest from './components/DatabaseTest';
+import { EnvelopeTest } from './components/EnvelopeTest';
 import AccountManagement from './pages/AccountManagement';
 
-type CurrentView = 'home' | 'accounts' | 'database-test';
+type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<CurrentView>('home');
@@ -33,6 +34,8 @@ const App: React.FC = () => {
             <DatabaseTest />
           </div>
         );
+      case 'envelope-test':
+        return <EnvelopeTest onNavigateBack={() => setCurrentView('home')} />;
       default:
         return (
           <div className="App">
@@ -91,13 +94,32 @@ const App: React.FC = () => {
                 >
                   🔧 Test Database
                 </button>
+
+                <button 
+                  onClick={() => setCurrentView('envelope-test')}
+                  style={{
+                    padding: '16px 32px',
+                    fontSize: '18px',
+                    backgroundColor: '#e74c3c',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c0392b'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e74c3c'}
+                >
+                  📧 Test Envelopes
+                </button>
               </div>
 
               <div style={{ marginTop: '40px', fontSize: '14px', color: '#7f8c8d' }}>
                 <p>
-                  <strong>Phase 1, Step 3 Complete:</strong> Account Management UI with full CRUD operations
+                  <strong>Phase 2 Ready:</strong> Envelope System Database Layer Complete!
                 </p>
-                <p>Next: Envelope system implementation</p>
+                <p>Click "Test Envelopes" to verify the new envelope functionality</p>
               </div>
             </header>
           </div>
