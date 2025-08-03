@@ -2,4 +2,7 @@
 export { getDatabase, closeDatabase } from './connection';
 export { accountsRepository, AccountsRepository } from './accounts';
 export { envelopeRepository, EnvelopeOperations } from './envelopes';
+export { TransactionDatabase } from './transactions';
+export { CreditCardPaymentDatabase } from './creditCardPayments';
+export { CompensationCreatorDatabase, compensationCreatorDatabase } from './compensationCreator';
 export * from './types';

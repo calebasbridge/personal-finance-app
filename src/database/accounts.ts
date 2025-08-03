@@ -86,40 +86,116 @@ export class AccountsRepository {
         return null;
       }
 
-      const fields = [];
-      const values = [];
+      // Use a transaction to ensure account and envelope updates are atomic
+      const transaction = this.db.transaction(() => {
+        // If updating account balance, validate envelope integrity first
+        if (updateData.current_balance !== undefined && updateData.current_balance !== existingAccount.current_balance) {
+          // Get all envelopes for this account
+          const getEnvelopesStmt = this.db.prepare(`
+            SELECT id, name, current_balance FROM envelopes 
+            WHERE account_id = ?
+          `);
+          const envelopes = getEnvelopesStmt.all(updateData.id) as { id: number; name: string; current_balance: number }[];
+          
+          // Calculate total envelope balance
+          const totalEnvelopeBalance = envelopes.reduce((sum, env) => sum + env.current_balance, 0);
+          const newAccountBalance = updateData.current_balance;
+          const balanceDifference = newAccountBalance - totalEnvelopeBalance;
+          
+          // If there would be a discrepancy, block the update and provide detailed error
+          if (Math.abs(balanceDifference) > 0.01) {
+            const errorDetails = {
+              accountName: existingAccount.name,
+              currentAccountBalance: existingAccount.current_balance,
+              newAccountBalance: newAccountBalance,
+              totalEnvelopeBalance: totalEnvelopeBalance,
+              difference: balanceDifference,
+              envelopes: envelopes.map(env => ({
+                name: env.name,
+                balance: env.current_balance
+              })),
+              message: `Cannot update account balance: Would create ${balanceDifference.toFixed(2)} discrepancy.\n\n` +
+                      `New account balance: ${newAccountBalance.toFixed(2)}\n` +
+                      `Total envelope balance: ${totalEnvelopeBalance.toFixed(2)}\n` +
+                      `Difference: ${balanceDifference.toFixed(2)}\n\n` +
+                      `Please first update envelope balances to match your intended allocation, then update the account balance.`
+            };
+            
+            throw new Error(JSON.stringify(errorDetails));
+          }
+        }
 
-      if (updateData.name !== undefined) {
-        fields.push('name = ?');
-        values.push(updateData.name);
-      }
-      if (updateData.type !== undefined) {
-        fields.push('type = ?');
-        values.push(updateData.type);
-      }
-      if (updateData.initial_balance !== undefined) {
-        fields.push('initial_balance = ?');
-        values.push(updateData.initial_balance);
-      }
-      if (updateData.current_balance !== undefined) {
-        fields.push('current_balance = ?');
-        values.push(updateData.current_balance);
-      }
+        // Proceed with account update only if balance integrity is maintained
+        const fields = [];
+        const values = [];
+        let nameChanged = false;
 
-      if (fields.length === 0) {
-        return existingAccount;
-      }
+        if (updateData.name !== undefined) {
+          fields.push('name = ?');
+          values.push(updateData.name);
+          nameChanged = true;
+        }
+        if (updateData.type !== undefined) {
+          fields.push('type = ?');
+          values.push(updateData.type);
+        }
+        if (updateData.initial_balance !== undefined) {
+          fields.push('initial_balance = ?');
+          values.push(updateData.initial_balance);
+        }
+        if (updateData.current_balance !== undefined) {
+          fields.push('current_balance = ?');
+          values.push(updateData.current_balance);
+        }
 
-      values.push(updateData.id);
-      const stmt = this.db.prepare(`
-        UPDATE accounts 
-        SET ${fields.join(', ')}
-        WHERE id = ?
-      `);
-      
-      stmt.run(...values);
-      return this.getById(updateData.id);
+        if (fields.length === 0) {
+          return existingAccount;
+        }
+
+        // Update the account
+        values.push(updateData.id);
+        const stmt = this.db.prepare(`
+          UPDATE accounts 
+          SET ${fields.join(', ')}
+          WHERE id = ?
+        `);
+        
+        stmt.run(...values);
+
+        // Update envelope names if account name changed (but not balances)
+        if (nameChanged) {
+          // Find and update unassigned envelope name
+          const findUnassignedStmt = this.db.prepare(`
+            SELECT id FROM envelopes 
+            WHERE account_id = ? AND name LIKE 'Unassigned %'
+            LIMIT 1
+          `);
+          const unassignedEnvelope = findUnassignedStmt.get(updateData.id) as { id: number } | undefined;
+
+          if (unassignedEnvelope) {
+            const updateEnvelopeNameStmt = this.db.prepare(`
+              UPDATE envelopes 
+              SET name = ?
+              WHERE id = ?
+            `);
+            updateEnvelopeNameStmt.run(`Unassigned ${updateData.name}`, unassignedEnvelope.id);
+          }
+        }
+
+        return this.getById(updateData.id);
+      });
+
+      return transaction();
     } catch (error) {
+      // Try to parse error as JSON for detailed balance error, otherwise throw original
+      try {
+        const errorData = JSON.parse(String(error).replace('Error: ', ''));
+        if (errorData.message) {
+          throw new Error(errorData.message);
+        }
+      } catch {
+        // Not a JSON error, throw original
+      }
       throw new Error(`Failed to update account: ${error}`);
     }
   }

@@ -38,8 +38,36 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ onNavigateHome })
     try {
       setIsLoading(true);
       setError('');
-      const result = await window.electronAPI.database.getAllAccounts();
-      setAccounts(result);
+      
+      // Get accounts with transaction-aware balances instead of static balances
+      const accountBalances: any[] = await (window.electronAPI as any).balances.getAccountBalancesByStatus();
+      
+      // Transform the balance data to match Account interface
+      const accountsWithCorrectBalances: any[] = accountBalances.map((balance: any) => ({
+        id: balance.account_id,
+        name: balance.account_name,
+        type: balance.account_type,
+        current_balance: balance.available_balance, // Use transaction-aware balance
+        initial_balance: 0, // We'll get this from the original account data
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
+      
+      // Get the original account data for initial_balance and timestamps
+      const originalAccounts: any[] = await (window.electronAPI as any).database.getAllAccounts();
+      
+      // Merge the data
+      const mergedAccounts = accountsWithCorrectBalances.map((account: any) => {
+        const original = originalAccounts.find((orig: any) => orig.id === account.id);
+        return {
+          ...account,
+          initial_balance: original?.initial_balance || 0,
+          created_at: original?.created_at || account.created_at,
+          updated_at: original?.updated_at || account.updated_at
+        };
+      });
+      
+      setAccounts(mergedAccounts);
     } catch (err) {
       setError('Failed to load accounts. Please try again.');
       console.error('Error loading accounts:', err);

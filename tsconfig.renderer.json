@@ -18,11 +18,7 @@
     "sourceMap": true
   },
   "include": [
-    "src/index.tsx",
-    "src/App.tsx",
-    "src/App.css",
-    "src/components/**/*",
-    "src/types/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

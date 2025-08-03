@@ -11,8 +11,10 @@ export function getDatabase(): Database.Database {
     
     db = new Database(dbPath);
     
-    // Enable foreign keys
+    // Enable foreign keys and other pragmas
     db.pragma('foreign_keys = ON');
+    db.pragma('journal_mode = WAL');
+    db.pragma('synchronous = NORMAL');
     
     initializeSchema();
   }

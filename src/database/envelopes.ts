@@ -9,7 +9,8 @@ import {
   EnvelopeTransfer, 
   CreateEnvelopeTransferData,
   EnvelopeWithAccount,
-  AccountWithEnvelopes
+  AccountWithEnvelopes,
+  TransactionInput
 } from './types';
 
 export class EnvelopeOperations {
@@ -171,7 +172,7 @@ export class EnvelopeOperations {
     return result.changes > 0;
   }
 
-  // Transfer money between envelopes
+  // Transfer money between envelopes using transaction-aware system
   transferBetweenEnvelopes(transferData: CreateEnvelopeTransferData): EnvelopeTransfer {
     const transaction = this.db.transaction(() => {
       // Get source and destination envelopes
@@ -182,27 +183,66 @@ export class EnvelopeOperations {
         throw new Error('Source or destination envelope not found');
       }
 
-      // Check if source envelope has sufficient funds
-      if (fromEnvelope.current_balance < transferData.amount) {
-        throw new Error('Insufficient funds in source envelope');
+      // Verify envelopes are in the same account
+      if (fromEnvelope.account_id !== toEnvelope.account_id) {
+        throw new Error('Cannot transfer between envelopes in different accounts');
       }
 
-      // Update envelope balances
-      this.updateEnvelope(transferData.from_envelope_id, {
-        current_balance: fromEnvelope.current_balance - transferData.amount
-      });
+      // Get transaction-aware balance for source envelope
+      const sourceBalanceData = this.db.prepare(`
+        SELECT available_balance 
+        FROM envelope_balances_by_status 
+        WHERE envelope_id = ?
+      `).get(transferData.from_envelope_id) as { available_balance: number } | undefined;
+      
+      if (!sourceBalanceData) {
+        throw new Error('Could not retrieve source envelope balance information');
+      }
+      
+      const sourceAvailableBalance = sourceBalanceData.available_balance;
 
-      this.updateEnvelope(transferData.to_envelope_id, {
-        current_balance: toEnvelope.current_balance + transferData.amount
-      });
+      // Check if source envelope has sufficient funds using transaction-aware balance
+      if (sourceAvailableBalance < transferData.amount) {
+        throw new Error(`Insufficient funds in source envelope. Available: ${sourceAvailableBalance.toFixed(2)}, Requested: ${transferData.amount.toFixed(2)}`);
+      }
 
-      // Record the transfer
+      // Create transaction records instead of directly updating envelope balances
+      
+      // Transaction 1: Negative amount from source envelope (debit)
+      const sourceTransactionStmt = this.db.prepare(`
+        INSERT INTO transactions (account_id, envelope_id, amount, date, status, description)
+        VALUES (?, ?, ?, ?, 'cleared', ?)
+      `);
+
+      const sourceTransactionResult = sourceTransactionStmt.run(
+        fromEnvelope.account_id,
+        transferData.from_envelope_id,
+        -transferData.amount, // Negative for outgoing transfer
+        transferData.date,
+        `Transfer to ${toEnvelope.name}: ${transferData.description || 'Envelope transfer'}`
+      );
+
+      // Transaction 2: Positive amount to destination envelope (credit)
+      const destTransactionStmt = this.db.prepare(`
+        INSERT INTO transactions (account_id, envelope_id, amount, date, status, description)
+        VALUES (?, ?, ?, ?, 'cleared', ?)
+      `);
+
+      const destTransactionResult = destTransactionStmt.run(
+        toEnvelope.account_id,
+        transferData.to_envelope_id,
+        transferData.amount, // Positive for incoming transfer
+        transferData.date,
+        `Transfer from ${fromEnvelope.name}: ${transferData.description || 'Envelope transfer'}`
+      );
+
+      // Record the transfer in envelope_transfers table for history
       const transferStmt = this.db.prepare(`
         INSERT INTO envelope_transfers (from_envelope_id, to_envelope_id, amount, date, description)
         VALUES (?, ?, ?, ?, ?)
       `);
 
-      const result = transferStmt.run(
+      const transferResult = transferStmt.run(
         transferData.from_envelope_id,
         transferData.to_envelope_id,
         transferData.amount,
@@ -212,7 +252,7 @@ export class EnvelopeOperations {
 
       // Return the transfer record
       const getTransferStmt = this.db.prepare('SELECT * FROM envelope_transfers WHERE id = ?');
-      return getTransferStmt.get(result.lastInsertRowid as number) as EnvelopeTransfer;
+      return getTransferStmt.get(transferResult.lastInsertRowid as number) as EnvelopeTransfer;
     });
 
     return transaction();
