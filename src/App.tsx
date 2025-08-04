@@ -12,11 +12,20 @@ import EnvelopeManagement from './components/EnvelopeManagement';
 import AccountManagement from './pages/AccountManagement';
 import CreditCardPaymentPage from './pages/CreditCardPaymentPage';
 import CompensationCreatorPage from './pages/CompensationCreatorPage';
+import ProfileIndicator from './components/ProfileIndicator';
+import ProfileManagementDialog from './components/ProfileManagementDialog';
 
 type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test' | 'transaction-test' | 'balance-test' | 'partial-payment-test' | 'compensation-creator-test' | 'transaction-entry' | 'envelope-transfer' | 'envelope-management' | 'credit-card-payment' | 'compensation-creator';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<CurrentView>('home');
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+
+  const handleProfileChanged = () => {
+    // This will be called when profiles are created, switched, or deleted
+    // You can add any additional logic here if needed
+    console.log('Profile changed - UI will refresh');
+  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -162,6 +171,16 @@ const App: React.FC = () => {
         return (
           <div className="App">
             <header className="App-header">
+              {/* Header with Profile Indicator */}
+              <div style={{ 
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                zIndex: 1000
+              }}>
+                <ProfileIndicator onManageProfilesClick={() => setIsProfileDialogOpen(true)} />
+              </div>
+
               <h1>Personal Finance App</h1>
               <p>Hello World! 🚀</p>
               <p>Welcome to your new Electron + React + TypeScript desktop application.</p>
@@ -427,6 +446,13 @@ const App: React.FC = () => {
                 <p>The application now includes debt analysis, funding targets, and automatic 75/25 W-2/dividend split!</p>
                 <p><strong>🎉 ALL 7 Phase 4 Components Complete:</strong> Professional-grade personal finance application ready!</p>
               </div>
+
+              {/* Profile Management Dialog */}
+              <ProfileManagementDialog
+                isOpen={isProfileDialogOpen}
+                onClose={() => setIsProfileDialogOpen(false)}
+                onProfileChanged={handleProfileChanged}
+              />
             </header>
           </div>
         );
@@ -435,7 +461,41 @@ const App: React.FC = () => {
 
   return currentView === 'home' ? renderContent() : (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Header for non-home pages */}
+      <div style={{ 
+        background: '#1e293b', 
+        padding: '10px 20px', 
+        borderBottom: '1px solid #334155',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <button
+          onClick={() => setCurrentView('home')}
+          style={{
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+        >
+          ← Back to Home
+        </button>
+        <ProfileIndicator onManageProfilesClick={() => setIsProfileDialogOpen(true)} />
+      </div>
+      
       {renderContent()}
+
+      {/* Profile Management Dialog - Available from any page */}
+      <ProfileManagementDialog
+        isOpen={isProfileDialogOpen}
+        onClose={() => setIsProfileDialogOpen(false)}
+        onProfileChanged={handleProfileChanged}
+      />
     </div>
   );
 };

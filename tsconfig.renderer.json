@@ -15,10 +15,13 @@
     "noEmit": false,
     "jsx": "react-jsx",
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["electron"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/types/**/*"
   ],
   "exclude": [
     "node_modules",

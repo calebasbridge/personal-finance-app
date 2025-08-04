@@ -13,11 +13,19 @@ import {
 } from './types';
 
 export class CompensationCreatorDatabase {
-  private db: Database.Database;
+  private _db: any = null;
 
-  constructor() {
-    this.db = getDatabase();
-    this.initializeTables();
+  private get db() {
+    if (!this._db) {
+      this._db = getDatabase();
+      this.initializeTables();
+    }
+    return this._db;
+  }
+
+  // Reset database connection when switching profiles
+  public resetConnection() {
+    this._db = null;
   }
 
   private initializeTables(): void {
@@ -304,5 +312,5 @@ export class CompensationCreatorDatabase {
   }
 }
 
-// Export singleton instance
+// Export singleton instance - but don't instantiate database connection yet
 export const compensationCreatorDatabase = new CompensationCreatorDatabase();

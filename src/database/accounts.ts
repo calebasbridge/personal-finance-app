@@ -2,7 +2,19 @@ import { getDatabase } from './connection';
 import { Account, NewAccount, UpdateAccount, AccountType, CreateEnvelopeData } from './types';
 
 export class AccountsRepository {
-  private db = getDatabase();
+  private _db: any = null;
+
+  private get db() {
+    if (!this._db) {
+      this._db = getDatabase();
+    }
+    return this._db;
+  }
+
+  // Reset database connection when switching profiles
+  public resetConnection() {
+    this._db = null;
+  }
 
   create(account: NewAccount): Account {
     try {
@@ -301,5 +313,5 @@ export class AccountsRepository {
   }
 }
 
-// Export singleton instance
+// Export singleton instance - but don't instantiate database connection yet
 export const accountsRepository = new AccountsRepository();

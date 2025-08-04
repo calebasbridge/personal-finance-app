@@ -14,11 +14,19 @@ import {
 } from './types';
 
 export class EnvelopeOperations {
-  private db: Database.Database;
+  private _db: any = null;
 
-  constructor() {
-    this.db = getDatabase();
-    this.initializeTables();
+  private get db() {
+    if (!this._db) {
+      this._db = getDatabase();
+      this.initializeTables();
+    }
+    return this._db;
+  }
+
+  // Reset database connection when switching profiles
+  public resetConnection() {
+    this._db = null;
   }
 
   private initializeTables(): void {

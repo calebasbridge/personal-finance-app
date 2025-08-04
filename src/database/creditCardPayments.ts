@@ -9,10 +9,19 @@ import {
 } from './types';
 
 export class CreditCardPaymentDatabase {
-  private db = getDatabase();
+  private _db: any = null;
 
-  constructor() {
-    this.createTables();
+  private get db() {
+    if (!this._db) {
+      this._db = getDatabase();
+      this.createTables();
+    }
+    return this._db;
+  }
+
+  // Reset database connection when switching profiles
+  public resetConnection() {
+    this._db = null;
   }
 
   private createTables(): void {
@@ -639,3 +648,6 @@ export class CreditCardPaymentDatabase {
     };
   }
 }
+
+// Export singleton instance - but don't instantiate database connection yet
+export const creditCardPaymentDatabase = new CreditCardPaymentDatabase();

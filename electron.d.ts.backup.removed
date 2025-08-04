@@ -1,5 +1,4 @@
-/// <reference types="electron" />
-// Enhanced TypeScript definitions for Electron API
+// TypeScript definitions for Electron API - moved to src root for better resolution
 
 interface DatabaseAPI {
   createAccount: (accountData: any) => Promise<any>;
@@ -140,32 +139,22 @@ interface CompensationAPI {
 
 interface Profile {
   name: string;
-  displayName: string;
-  created: string;
-  lastUsed: string;
-  hasPassword: boolean;
   description?: string;
-  isActive?: boolean;
+  isActive: boolean;
+  createdAt: string;
 }
 
 interface ProfileAPI {
-  create: (name: string, description?: string, password?: string) => Promise<{ success: boolean; profileName: string }>;
+  create: (name: string, description?: string) => Promise<{ success: boolean; profileName: string }>;
   delete: (name: string) => Promise<{ success: boolean }>;
-  switchTo: (name: string, password?: string) => Promise<{ success: boolean; profileName: string }>;
-  getCurrentProfile: () => Promise<{ profileName: string | null }>;
+  switchTo: (name: string) => Promise<{ success: boolean; profileName: string }>;
+  getCurrentProfile: () => Promise<{ profileName: string }>;
   listProfiles: () => Promise<{ profiles: Profile[] }>;
   migrateExistingDatabase: () => Promise<{ 
     success: boolean; 
     migrated: boolean; 
     profileName?: string 
   }>;
-  exists: (name: string) => Promise<boolean>;
-  getLastUsed: () => Promise<string | null>;
-  changePassword: (profileName: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean }>;
-  removePassword: (profileName: string, currentPassword: string) => Promise<{ success: boolean }>;
-  addPassword: (profileName: string, newPassword: string) => Promise<{ success: boolean }>;
-  verifyPassword: (profileName: string, password: string) => Promise<{ valid: boolean }>;
-  cleanupDuplicates: () => Promise<{ success: boolean; cleaned: boolean }>;
 }
 
 export interface ElectronAPI {
@@ -186,3 +175,5 @@ declare global {
     electronAPI: ElectronAPI;
   }
 }
+
+export {}; // Make this a module

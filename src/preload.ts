@@ -99,5 +99,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     calculateCompensation: (paycheckDate: string, customAmount?: number) => ipcRenderer.invoke('compensation:calculateCompensation', paycheckDate, customAmount),
     getNextPaycheckDate: () => ipcRenderer.invoke('compensation:getNextPaycheckDate'),
     suggestFundingTargets: () => ipcRenderer.invoke('compensation:suggestFundingTargets')
+  },
+  // Profile operations
+  profile: {
+    create: (name: string, description?: string, password?: string) => ipcRenderer.invoke('profile:create', name, description, password),
+    delete: (name: string) => ipcRenderer.invoke('profile:delete', name),
+    switchTo: (name: string, password?: string) => ipcRenderer.invoke('profile:switchTo', name, password),
+    getCurrentProfile: () => ipcRenderer.invoke('profile:getCurrentProfile'),
+    listProfiles: () => ipcRenderer.invoke('profile:listProfiles'),
+    migrateExistingDatabase: () => ipcRenderer.invoke('profile:migrateExistingDatabase'),
+    exists: (name: string) => ipcRenderer.invoke('profile:exists', name),
+    getLastUsed: () => ipcRenderer.invoke('profile:getLastUsed'),
+    changePassword: (profileName: string, oldPassword: string, newPassword: string) => ipcRenderer.invoke('profile:changePassword', profileName, oldPassword, newPassword),
+    removePassword: (profileName: string, currentPassword: string) => ipcRenderer.invoke('profile:removePassword', profileName, currentPassword),
+    addPassword: (profileName: string, newPassword: string) => ipcRenderer.invoke('profile:addPassword', profileName, newPassword),
+    verifyPassword: (profileName: string, password: string) => ipcRenderer.invoke('profile:verifyPassword', profileName, password),
+    cleanupDuplicates: () => ipcRenderer.invoke('profile:cleanupDuplicates')
   }
 });

@@ -16,11 +16,20 @@ import {
 } from './types';
 
 export class TransactionDatabase {
-  private db = getDatabase();
+  private _db: any = null;
 
-  constructor() {
-    this.createTables();
-    this.createViews();
+  private get db() {
+    if (!this._db) {
+      this._db = getDatabase();
+      this.createTables();
+      this.createViews();
+    }
+    return this._db;
+  }
+
+  // Reset database connection when switching profiles
+  public resetConnection() {
+    this._db = null;
   }
 
   private createTables(): void {
@@ -517,3 +526,6 @@ export class TransactionDatabase {
     return stmt.all(startDate, endDate) as TransactionWithDetails[];
   }
 }
+
+// Export singleton instance - but don't instantiate database connection yet
+export const transactionDatabase = new TransactionDatabase();
