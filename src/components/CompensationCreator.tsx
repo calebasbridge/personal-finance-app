@@ -249,16 +249,14 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
 
   // Render methods
   const renderCalculatorTab = () => (
-    <div className="space-y-6">
+    <div className="d-flex flex-col gap-5">
       {/* Paycheck Configuration */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Paycheck Configuration</h3>
+      <div className="finance-card">
+        <h3 className="finance-card-title mb-4">💰 Paycheck Configuration</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Paycheck Date
-            </label>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label className="form-label">Paycheck Date</label>
             <input
               type="date"
               value={paycheckFormData.paycheck_date}
@@ -266,14 +264,12 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
                 setPaycheckFormData(prev => ({ ...prev, paycheck_date: e.target.value }));
                 calculateCompensation(e.target.value);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="form-input"
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Custom Amount (Optional)
-            </label>
+          <div className="form-group">
+            <label className="form-label">Custom Amount (Optional)</label>
             <input
               type="number"
               step="0.01"
@@ -283,71 +279,71 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
                 setPaycheckFormData(prev => ({ ...prev, custom_amount: e.target.value }));
                 calculateCompensation(undefined, e.target.value ? parseFloat(e.target.value) : undefined);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="form-input"
             />
           </div>
         </div>
 
-        <div className="mt-4 space-y-2">
-          <label className="flex items-center">
+        <div className="mt-4 d-flex flex-col gap-2">
+          <label className="d-flex align-center">
             <input
               type="checkbox"
               checked={paycheckFormData.include_debt_payment}
               onChange={(e) => setPaycheckFormData(prev => ({ ...prev, include_debt_payment: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              style={{ marginRight: '8px' }}
             />
-            <span className="ml-2 text-sm text-gray-700">Include credit card debt payment</span>
+            <span className="text-sm text-muted">Include credit card debt payment</span>
           </label>
           
-          <label className="flex items-center">
+          <label className="d-flex align-center">
             <input
               type="checkbox"
               checked={paycheckFormData.include_funding_targets}
               onChange={(e) => setPaycheckFormData(prev => ({ ...prev, include_funding_targets: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              style={{ marginRight: '8px' }}
             />
-            <span className="ml-2 text-sm text-gray-700">Include funding targets</span>
+            <span className="text-sm text-muted">Include funding targets</span>
           </label>
         </div>
       </div>
 
       {/* Calculation Results */}
       {calculation && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Compensation Breakdown</h3>
+        <div className="finance-card">
+          <h3 className="finance-card-title mb-4">📊 Compensation Breakdown</h3>
           
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm font-medium text-blue-600">Total Payment</div>
-              <div className="text-2xl font-bold text-blue-900">{formatCurrency(calculation.total_payment)}</div>
+          <div className="data-grid mb-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <div className="finance-card" style={{ backgroundColor: '#d1ecf1', border: '1px solid #bee5eb' }}>
+              <div className="text-sm font-semibold text-info">Total Payment</div>
+              <div className="balance-large text-info currency">{formatCurrency(calculation.total_payment)}</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-sm font-medium text-green-600">W-2 Paycheck (75%)</div>
-              <div className="text-2xl font-bold text-green-900">{formatCurrency(calculation.w2_amount)}</div>
+            <div className="finance-card" style={{ backgroundColor: '#d4edda', border: '1px solid #c3e6cb' }}>
+              <div className="text-sm font-semibold text-success">W-2 Paycheck (75%)</div>
+              <div className="balance-large text-success currency">{formatCurrency(calculation.w2_amount)}</div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="text-sm font-medium text-purple-600">Dividend (25%)</div>
-              <div className="text-2xl font-bold text-purple-900">{formatCurrency(calculation.dividend_amount)}</div>
+            <div className="finance-card" style={{ backgroundColor: '#e2e3f1', border: '1px solid #d1d3e4' }}>
+              <div className="text-sm font-semibold" style={{ color: '#6f42c1' }}>Dividend (25%)</div>
+              <div className="balance-large currency" style={{ color: '#6f42c1' }}>{formatCurrency(calculation.dividend_amount)}</div>
             </div>
           </div>
 
           {/* Debt Analysis */}
           {calculation.debt_by_envelope.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-md font-semibold text-gray-900 mb-3">🏦 Current Credit Card Debt</h4>
-              <div className="bg-red-50 rounded-lg p-4">
-                <div className="space-y-2">
+            <div className="mb-5">
+              <h4 className="font-semibold text-dark mb-3">🏦 Current Credit Card Debt</h4>
+              <div className="finance-card" style={{ backgroundColor: '#f8d7da', border: '1px solid #f5c6cb' }}>
+                <div className="d-flex flex-col gap-2">
                   {calculation.debt_by_envelope.map(debt => (
-                    <div key={debt.envelope_id} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">{debt.envelope_name}</span>
-                      <span className="font-semibold text-red-600">{formatCurrency(debt.debt_amount)}</span>
+                    <div key={debt.envelope_id} className="d-flex justify-between align-center">
+                      <span className="text-sm text-muted">{debt.envelope_name}</span>
+                      <span className="font-semibold text-error currency">{formatCurrency(debt.debt_amount)}</span>
                     </div>
                   ))}
-                  <div className="border-t border-red-200 pt-2 mt-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-900">Total Debt</span>
-                      <span className="font-bold text-red-600">{formatCurrency(calculation.total_debt)}</span>
+                  <div className="border-top pt-2 mt-2" style={{ borderColor: '#f5c6cb' }}>
+                    <div className="d-flex justify-between align-center">
+                      <span className="font-semibold text-dark">Total Debt</span>
+                      <span className="font-bold text-error currency">{formatCurrency(calculation.total_debt)}</span>
                     </div>
                   </div>
                 </div>
@@ -358,25 +354,25 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
           {/* Funding Targets */}
           {calculation.funding_targets.length > 0 && (
             <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-3">🎯 Funding Targets</h4>
-              <div className="bg-yellow-50 rounded-lg p-4">
-                <div className="space-y-2">
+              <h4 className="font-semibold text-dark mb-3">🎯 Funding Targets</h4>
+              <div className="finance-card" style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7' }}>
+                <div className="d-flex flex-col gap-2">
                   {calculation.funding_targets.map(target => (
-                    <div key={target.envelope_id} className="flex justify-between items-center">
+                    <div key={target.envelope_id} className="d-flex justify-between align-center">
                       <div>
-                        <span className="text-sm text-gray-700">{target.envelope_name}</span>
-                        <span className="text-xs text-gray-500 ml-2">({target.target_type.replace('_', ' ')})</span>
+                        <span className="text-sm text-muted">{target.envelope_name}</span>
+                        <span className="text-xs text-muted ml-2">({target.target_type.replace('_', ' ')})</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-semibold text-yellow-600">Need: {formatCurrency(target.shortfall)}</div>
-                        <div className="text-xs text-gray-500">Current: {formatCurrency(target.current_balance)}</div>
+                        <div className="text-sm font-semibold text-warning">Need: {formatCurrency(target.shortfall)}</div>
+                        <div className="text-xs text-muted">Current: {formatCurrency(target.current_balance)}</div>
                       </div>
                     </div>
                   ))}
-                  <div className="border-t border-yellow-200 pt-2 mt-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-900">Total Shortfall</span>
-                      <span className="font-bold text-yellow-600">{formatCurrency(calculation.total_shortfall)}</span>
+                  <div className="border-top pt-2 mt-2" style={{ borderColor: '#ffeaa7' }}>
+                    <div className="d-flex justify-between align-center">
+                      <span className="font-semibold text-dark">Total Shortfall</span>
+                      <span className="font-bold text-warning currency">{formatCurrency(calculation.total_shortfall)}</span>
                     </div>
                   </div>
                 </div>
@@ -389,10 +385,10 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
   );
 
   const renderTargetsTab = () => (
-    <div className="space-y-6">
+    <div className="d-flex flex-col gap-5">
       {/* Add Target Button */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">🎯 Funding Targets</h3>
+      <div className="d-flex justify-between align-center">
+        <h3 className="finance-card-title">🎯 Funding Targets</h3>
         <button
           onClick={() => {
             setShowTargetForm(true);
@@ -405,7 +401,7 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
               description: ''
             });
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="btn btn-lg btn-primary"
         >
           Add Target
         </button>
@@ -413,20 +409,18 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
 
       {/* Target Form */}
       {showTargetForm && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h4 className="text-md font-semibold text-gray-900 mb-4">
+        <div className="form-container">
+          <h4 className="font-semibold text-dark mb-4">
             {editingTarget ? 'Edit Funding Target' : 'Create Funding Target'}
           </h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Envelope
-              </label>
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label required">Envelope</label>
               <select
                 value={targetFormData.envelope_id}
                 onChange={(e) => setTargetFormData(prev => ({ ...prev, envelope_id: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-select"
                 disabled={!!editingTarget}
               >
                 <option value="">Select envelope...</option>
@@ -438,224 +432,205 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
               </select>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Target Type
-              </label>
+            <div className="form-group">
+              <label className="form-label required">Target Type</label>
               <select
                 value={targetFormData.target_type}
                 onChange={(e) => setTargetFormData(prev => ({ ...prev, target_type: e.target.value as FundingTargetType }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-select"
               >
                 <option value="monthly_minimum">Monthly Minimum</option>
                 <option value="per_paycheck">Per Paycheck</option>
                 <option value="monthly_stipend">Monthly Stipend</option>
               </select>
-              <p className="text-xs text-gray-500 mt-1">
+              <div className="form-help">
                 {getTargetTypeDescription(targetFormData.target_type)}
-              </p>
+              </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Target Amount
-              </label>
+            <div className="form-group">
+              <label className="form-label required">Target Amount</label>
               <input
                 type="number"
                 step="0.01"
                 value={targetFormData.target_amount}
                 onChange={(e) => setTargetFormData(prev => ({ ...prev, target_amount: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
                 placeholder="0.00"
               />
             </div>
             
             {targetFormData.target_type === 'monthly_stipend' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Minimum Amount
-                </label>
+              <div className="form-group">
+                <label className="form-label">Minimum Amount</label>
                 <input
                   type="number"
                   step="0.01"
                   value={targetFormData.minimum_amount}
                   onChange={(e) => setTargetFormData(prev => ({ ...prev, minimum_amount: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="form-input"
                   placeholder="0.00"
                 />
               </div>
             )}
           </div>
           
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description (Optional)
-            </label>
+          <div className="form-group">
+            <label className="form-label">Description (Optional)</label>
             <textarea
               value={targetFormData.description}
               onChange={(e) => setTargetFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="form-textarea"
               rows={2}
               placeholder="e.g., Emergency fund for car repairs"
             />
           </div>
           
-          <div className="mt-6 flex space-x-3">
-            <button
-              onClick={editingTarget ? handleUpdateTarget : handleCreateTarget}
-              disabled={loading || !targetFormData.envelope_id || !targetFormData.target_amount}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : (editingTarget ? 'Update Target' : 'Create Target')}
-            </button>
+          <div className="form-actions">
             <button
               onClick={() => {
                 setShowTargetForm(false);
                 setEditingTarget(null);
               }}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="btn btn-secondary"
             >
               Cancel
+            </button>
+            <button
+              onClick={editingTarget ? handleUpdateTarget : handleCreateTarget}
+              disabled={loading || !targetFormData.envelope_id || !targetFormData.target_amount}
+              className="btn btn-success"
+            >
+              {loading ? 'Saving...' : (editingTarget ? 'Update Target' : 'Create Target')}
             </button>
           </div>
         </div>
       )}
 
       {/* Targets List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6">
-          {fundingTargets.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No funding targets configured.</p>
-              <p className="text-sm">Add targets to track envelope funding goals.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {fundingTargets.map(target => (
-                <div key={target.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h4 className="font-semibold text-gray-900">{target.envelope_name}</h4>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {target.target_type.replace('_', ' ')}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{target.account_name}</p>
-                      {target.description && (
-                        <p className="text-sm text-gray-500 mt-1">{target.description}</p>
-                      )}
+      <div className="finance-card">
+        {fundingTargets.length === 0 ? (
+          <div className="text-center p-10 text-muted">
+            <p>No funding targets configured.</p>
+            <p className="text-sm">Add targets to track envelope funding goals.</p>
+          </div>
+        ) : (
+          <div className="d-flex flex-col gap-4">
+            {fundingTargets.map(target => (
+              <div key={target.id} className="finance-card" style={{ border: '1px solid #dee2e6' }}>
+                <div className="d-flex justify-between align-start">
+                  <div className="flex-1">
+                    <div className="d-flex align-center gap-2">
+                      <h4 className="font-semibold text-dark">{target.envelope_name}</h4>
+                      <span className="badge badge-info">
+                        {target.target_type.replace('_', ' ')}
+                      </span>
                     </div>
-                    
-                    <div className="text-right ml-4">
-                      <div className="text-lg font-bold text-blue-600">
-                        {formatCurrency(target.target_amount)}
-                      </div>
-                      {target.minimum_amount && (
-                        <div className="text-sm text-gray-500">
-                          Min: {formatCurrency(target.minimum_amount)}
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-500">
-                        Current: {formatCurrency(target.available_balance || 0)}
-                      </div>
+                    <p className="text-sm text-muted mt-1">{target.account_name}</p>
+                    {target.description && (
+                      <p className="text-sm text-muted mt-1">{target.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="text-right ml-4">
+                    <div className="balance-large text-primary currency">
+                      {formatCurrency(target.target_amount)}
                     </div>
-                    
-                    <div className="ml-4 space-x-2">
-                      <button
-                        onClick={() => startEditTarget(target)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTarget(target.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Delete
-                      </button>
+                    {target.minimum_amount && (
+                      <div className="text-sm text-muted">
+                        Min: {formatCurrency(target.minimum_amount)}
+                      </div>
+                    )}
+                    <div className="text-sm text-muted">
+                      Current: {formatCurrency(target.available_balance || 0)}
                     </div>
                   </div>
+                  
+                  <div className="ml-4 d-flex gap-2">
+                    <button
+                      onClick={() => startEditTarget(target)}
+                      className="btn btn-sm btn-primary"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTarget(target.id)}
+                      className="btn btn-sm btn-danger"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">💰 Compensation Creator</h1>
-          <p className="text-gray-600">Calculate twice-monthly self-employment payments with debt analysis and funding targets</p>
-        </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-          >
-            Close
-          </button>
-        )}
-      </div>
+    <div className="p-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
       {/* Status Messages */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex justify-between items-center">
-            <p className="text-red-800">{error}</p>
-            <button onClick={clearMessages} className="text-red-600 hover:text-red-800">
-              ✕
-            </button>
-          </div>
+        <div className="message message-error">
+          <span>❌ {error}</span>
+          <button onClick={clearMessages} className="btn btn-ghost">
+            ✕
+          </button>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex justify-between items-center">
-            <p className="text-green-800">{success}</p>
-            <button onClick={clearMessages} className="text-green-600 hover:text-green-800">
-              ✕
-            </button>
-          </div>
+        <div className="message message-success">
+          <span>✅ {success}</span>
+          <button onClick={clearMessages} className="btn btn-ghost">
+            ✕
+          </button>
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
+      <div className="mb-5" style={{ borderBottom: '1px solid #dee2e6' }}>
+        <div className="d-flex gap-8" style={{ marginBottom: '-1px' }}>
           <button
             onClick={() => setActiveTab('calculator')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`btn btn-ghost ${
               activeTab === 'calculator'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'text-primary'
+                : 'text-muted'
             }`}
+            style={{
+              borderBottom: activeTab === 'calculator' ? '2px solid var(--primary-blue)' : '2px solid transparent',
+              borderRadius: '0',
+              padding: '8px 4px'
+            }}
           >
             📊 Calculator
           </button>
           <button
             onClick={() => setActiveTab('targets')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`btn btn-ghost ${
               activeTab === 'targets'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'text-primary'
+                : 'text-muted'
             }`}
+            style={{
+              borderBottom: activeTab === 'targets' ? '2px solid var(--primary-blue)' : '2px solid transparent',
+              borderRadius: '0',
+              padding: '8px 4px'
+            }}
           >
             🎯 Funding Targets ({fundingTargets.length})
           </button>
-        </nav>
+        </div>
       </div>
 
       {/* Tab Content */}
       {loading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-center p-10">
+          <div className="text-lg text-muted">Loading...</div>
         </div>
       )}
 

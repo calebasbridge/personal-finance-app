@@ -38,13 +38,10 @@ function createWindow(): void {
 
   const isDev = process.env.NODE_ENV === 'development';
   
-  if (isDev) {
-    // Load the built files instead of trying to connect to dev server
-    mainWindow.loadFile(path.join(__dirname, 'index.html'));
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  }
+  // Load the built application files
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  
+  // DevTools can be opened manually with F12 or Ctrl+Shift+I if needed during development
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();

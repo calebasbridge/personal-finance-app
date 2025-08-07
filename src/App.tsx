@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './styles/design-system.css';
 import './App.css';
 import DatabaseTest from './components/DatabaseTest';
 import { EnvelopeTest } from './components/EnvelopeTest';
@@ -11,11 +12,12 @@ import EnvelopeTransfer from './components/EnvelopeTransfer';
 import EnvelopeManagement from './components/EnvelopeManagement';
 import AccountManagement from './pages/AccountManagement';
 import CreditCardPaymentPage from './pages/CreditCardPaymentPage';
-import CompensationCreatorPage from './pages/CompensationCreatorPage';
+import CompensationCreator from './components/CompensationCreator';
 import ProfileIndicator from './components/ProfileIndicator';
 import ProfileManagementDialog from './components/ProfileManagementDialog';
+import DeveloperTools from './components/DeveloperTools';
 
-type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test' | 'transaction-test' | 'balance-test' | 'partial-payment-test' | 'compensation-creator-test' | 'transaction-entry' | 'envelope-transfer' | 'envelope-management' | 'credit-card-payment' | 'compensation-creator';
+type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test' | 'transaction-test' | 'balance-test' | 'partial-payment-test' | 'compensation-creator-test' | 'transaction-entry' | 'envelope-transfer' | 'envelope-management' | 'credit-card-payment' | 'compensation-creator' | 'developer-tools';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<CurrentView>('home');
@@ -31,46 +33,35 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'accounts':
         return <AccountManagement onNavigateHome={() => setCurrentView('home')} />;
+      case 'developer-tools':
+        return (
+          <DeveloperTools 
+            onNavigateBack={() => setCurrentView('home')}
+            onNavigateToTest={(testType) => setCurrentView(testType as CurrentView)}
+          />
+        );
       case 'database-test':
         return (
           <div style={{ padding: '20px' }}>
             <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
+              onClick={() => setCurrentView('developer-tools')}
+              className="back-button mb-4"
             >
-              ← Back to Home
+              ← Back to Developer Tools
             </button>
             <DatabaseTest />
           </div>
         );
       case 'envelope-test':
-        return <EnvelopeTest onNavigateBack={() => setCurrentView('home')} />;
+        return <EnvelopeTest onNavigateBack={() => setCurrentView('developer-tools')} />;
       case 'transaction-test':
         return (
           <div style={{ padding: '20px' }}>
             <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
+              onClick={() => setCurrentView('developer-tools')}
+              className="back-button mb-4"
             >
-              ← Back to Home
+              ← Back to Developer Tools
             </button>
             <TransactionTest />
           </div>
@@ -79,19 +70,10 @@ const App: React.FC = () => {
         return (
           <div style={{ padding: '20px' }}>
             <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
+              onClick={() => setCurrentView('developer-tools')}
+              className="back-button mb-4"
             >
-              ← Back to Home
+              ← Back to Developer Tools
             </button>
             <BalanceIntegrityTest />
           </div>
@@ -100,25 +82,16 @@ const App: React.FC = () => {
         return (
           <div style={{ padding: '20px' }}>
             <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
+              onClick={() => setCurrentView('developer-tools')}
+              className="back-button mb-4"
             >
-              ← Back to Home
+              ← Back to Developer Tools
             </button>
             <PartialPaymentTest />
           </div>
         );
       case 'compensation-creator-test':
-        return <CompensationCreatorTest onNavigateBack={() => setCurrentView('home')} />;
+        return <CompensationCreatorTest onNavigateBack={() => setCurrentView('developer-tools')} />;
       case 'transaction-entry':
         return <TransactionEntry onNavigateBack={() => setCurrentView('home')} />;
       case 'envelope-transfer':
@@ -128,49 +101,36 @@ const App: React.FC = () => {
       case 'credit-card-payment':
         return (
           <div style={{ padding: '20px' }}>
-            <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
-            >
-              ← Back to Home
-            </button>
+            <div className="page-header" style={{ marginBottom: '24px' }}>
+              <h1 className="page-title">💳 Credit Card Payment Wizard</h1>
+            </div>
             <CreditCardPaymentPage />
           </div>
         );
       case 'compensation-creator':
         return (
-          <div style={{ padding: '20px' }}>
-            <button 
-              onClick={() => setCurrentView('home')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                backgroundColor: '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '20px'
-              }}
-            >
-              ← Back to Home
-            </button>
-            <CompensationCreatorPage />
+          <div>
+            <div style={{ padding: '20px 20px 0 20px' }}>
+              <div className="page-header" style={{ marginBottom: '24px' }}>
+                <h1 className="page-title">💰 Compensation Creator</h1>
+                <p className="page-subtitle">Calculate twice-monthly self-employment payments with debt analysis and funding targets</p>
+              </div>
+            </div>
+            <CompensationCreator />
           </div>
         );
       default:
         return (
           <div className="App">
-            <header className="App-header">
+            <header className="App-header" style={{ 
+              padding: '40px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '100vh',
+              position: 'relative'
+            }}>
               {/* Header with Profile Indicator */}
               <div style={{ 
                 position: 'absolute',
@@ -181,270 +141,103 @@ const App: React.FC = () => {
                 <ProfileIndicator onManageProfilesClick={() => setIsProfileDialogOpen(true)} />
               </div>
 
-              <h1>Personal Finance App</h1>
-              <p>Hello World! 🚀</p>
-              <p>Welcome to your new Electron + React + TypeScript desktop application.</p>
-              
-              <div className="features">
-                <h2>Features:</h2>
-                <ul>
-                  <li>✅ Electron + React + TypeScript setup</li>
-                  <li>✅ SQLite integration ready</li>
-                  <li>✅ Account Management UI</li>
-                  <li>✅ Envelope System with Auto-Unassigned</li>
-                  <li>✅ Transaction Management System</li>
-                  <li>✅ Multi-Envelope Credit Card Payment System</li>
-                  <li>✅ Compensation Creator System</li>
-                  <li>⏳ Budget management</li>
-                  <li>⏳ Financial reports</li>
-                </ul>
+              {/* Menu Bar with Developer Tools */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                zIndex: 1000
+              }}>
+                <div style={{
+                  background: '#2a3441',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  fontSize: '14px'
+                }}>
+                  <button
+                    onClick={() => setCurrentView('developer-tools')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#61dafb',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = '#334155'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                  >
+                    Developer Tools
+                  </button>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '16px', marginTop: '30px', flexWrap: 'wrap' }}>
-                <button 
-                  onClick={() => setCurrentView('transaction-entry')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#17a2b8',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(23, 162, 184, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
-                >
-                  📝 Enter Transaction
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('envelope-transfer')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(40, 167, 69, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-                >
-                  📋 Envelope Transfer
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('envelope-management')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#6f42c1',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(111, 66, 193, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#59359a'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6f42c1'}
-                >
-                  📂 Manage Envelopes
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('credit-card-payment')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(220, 53, 69, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
-                >
-                  💳 Pay Credit Card
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('compensation-creator')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#fd7e14',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(253, 126, 20, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e56b0c'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fd7e14'}
-                >
-                  💰 Compensation Creator
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('balance-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#f39c12',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(243, 156, 18, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e67e22'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f39c12'}
-                >
-                  🔍 Test Balance Fix
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('partial-payment-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#ff6b35',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e55a2b'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ff6b35'}
-                >
-                  🧪 Test Partial Payments
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('compensation-creator-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#6610f2',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    boxShadow: '0 4px 8px rgba(102, 16, 242, 0.3)'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#520dc2'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6610f2'}
-                >
-                  💰 Test Compensation Creator
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('accounts')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#3498db',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
-                >
-                  💳 Manage Accounts
-                </button>
-                
-                <button 
-                  onClick={() => setCurrentView('database-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#27ae60',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#229954'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
-                >
-                  🔧 Test Database
-                </button>
+              {/* Main Title */}
+              <h1 style={{ marginBottom: '60px', fontSize: '2.5rem' }}>Personal Finance App</h1>
 
-                <button 
-                  onClick={() => setCurrentView('envelope-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c0392b'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e74c3c'}
-                >
-                  📧 Test Envelopes
-                </button>
-
-                <button 
-                  onClick={() => setCurrentView('transaction-test')}
-                  style={{
-                    padding: '16px 32px',
-                    fontSize: '18px',
-                    backgroundColor: '#9b59b6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#8e44ad'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#9b59b6'}
-                >
-                  🔄 Test Transactions
-                </button>
+              {/* MAIN NAVIGATION - Centered */}
+              <div className="nav-section" style={{ maxWidth: '800px', width: '100%' }}>
+                <div className="nav-grid" style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: '20px',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <button 
+                    onClick={() => setCurrentView('transaction-entry')}
+                    className="nav-btn nav-btn-primary"
+                  >
+                    📝 Enter Transaction
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentView('envelope-transfer')}
+                    className="nav-btn nav-btn-success"
+                  >
+                    📋 Envelope Transfer
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentView('envelope-management')}
+                    className="nav-btn nav-btn-purple"
+                  >
+                    📂 Manage Envelopes
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentView('credit-card-payment')}
+                    className="nav-btn nav-btn-danger"
+                  >
+                    💳 Pay Credit Card
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentView('compensation-creator')}
+                    className="nav-btn nav-btn-orange"
+                  >
+                    💰 Compensation Creator
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentView('accounts')}
+                    className="nav-btn nav-btn-teal"
+                  >
+                    💳 Manage Accounts
+                  </button>
+                </div>
               </div>
 
-              <div style={{ marginTop: '40px', fontSize: '14px', color: '#7f8c8d' }}>
-                <p>
-                  <strong>🏆 Phase 4 COMPLETE:</strong> Compensation Creator System Implemented!
-                </p>
-                <p>Click "💰 Compensation Creator" to calculate twice-monthly self-employment payments</p>
-                <p>The application now includes debt analysis, funding targets, and automatic 75/25 W-2/dividend split!</p>
-                <p><strong>🎉 ALL 7 Phase 4 Components Complete:</strong> Professional-grade personal finance application ready!</p>
+              {/* Copyright Footer */}
+              <div style={{ 
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                fontSize: '12px',
+                color: '#8892b0'
+              }}>
+                © Canto Chao, Inc. 2025
               </div>
 
               {/* Profile Management Dialog */}
@@ -464,23 +257,25 @@ const App: React.FC = () => {
       {/* Header for non-home pages */}
       <div style={{ 
         background: '#1e293b', 
-        padding: '10px 20px', 
+        padding: '12px 20px', 
         borderBottom: '1px solid #334155',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        minHeight: '48px'
       }}>
         <button
           onClick={() => setCurrentView('home')}
           style={{
-            background: '#3b82f6',
+            padding: '8px 16px',
+            fontSize: '14px',
+            backgroundColor: '#6c757d',
             color: 'white',
             border: 'none',
-            padding: '8px 16px',
-            borderRadius: '6px',
+            borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
+            transition: 'background-color 0.2s ease',
+            fontFamily: 'Arial, sans-serif'
           }}
         >
           ← Back to Home

@@ -278,19 +278,29 @@ const CreditCardPaymentWizard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Credit Card Payment Wizard</h2>
+    <div className="p-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <div className="message message-success">
+          ✅ {successMessage}
+        </div>
+      )}
+      
+      {error && (
+        <div className="message message-error">
+          ❌ {error}
+        </div>
+      )}
 
       {/* Credit Card Selection */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="max-w-md">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Credit Card Account
-          </label>
+      <div className="finance-card mb-5">
+        <div style={{ maxWidth: '400px' }}>
+          <label className="form-label required">Credit Card Account</label>
           <select
             value={selectedCardId || ''}
             onChange={(e) => setSelectedCardId(e.target.value ? parseInt(e.target.value) : null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-select"
           >
             <option value="">Select Credit Card</option>
             {creditCards.map(card => (
@@ -305,45 +315,45 @@ const CreditCardPaymentWizard: React.FC = () => {
       {selectedCardId && (
         <>
           {/* Unpaid Transactions Display */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">
+          <div className="finance-card mb-5">
+            <h3 className="finance-card-title mb-4">
               Unpaid Credit Card Transactions
             </h3>
             {unpaidTransactions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
+              <div className="text-center text-muted p-10">
                 No unpaid transactions on this credit card
-              </p>
+              </div>
             ) : (
-              <div className="space-y-4">
+              <div className="d-flex flex-col gap-4">
                 {unpaidTransactions.map(transaction => {
                   const isSelected = selectedTransactions.some(sel => sel.transaction_id === transaction.transaction_id);
                   const selection = selectedTransactions.find(sel => sel.transaction_id === transaction.transaction_id);
                   
                   return (
-                    <div key={transaction.transaction_id} className="border border-gray-200 rounded-lg p-4">
+                    <div key={transaction.transaction_id} className="finance-card" style={{ border: '1px solid #dee2e6' }}>
                       {/* Transaction Header */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
+                      <div className="d-flex justify-between align-center mb-3">
+                        <div className="d-flex align-center gap-3">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleTransactionToggle(transaction)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            style={{ width: '16px', height: '16px' }}
                           />
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-semibold text-dark">
                               {transaction.envelope_name} - ${transaction.amount.toFixed(2)}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted">
                               {transaction.description} • {new Date(transaction.date).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-semibold text-red-600">
+                          <div className="balance-large text-error currency">
                             ${transaction.amount.toFixed(2)}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted">
                             Unpaid Debt
                           </div>
                         </div>
@@ -351,17 +361,15 @@ const CreditCardPaymentWizard: React.FC = () => {
 
                       {/* Payment Controls - Show when selected */}
                       {isSelected && selection && (
-                        <div className="border-t pt-3 mt-3 bg-gray-50 -mx-4 px-4 pb-4">
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="border-top pt-3 mt-3 bg-gray-50" style={{ margin: '0 -20px', padding: '16px 20px 16px 20px' }}>
+                          <div className="form-grid-3">
                             {/* Cash Envelope Selection */}
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Pay From Cash Envelope
-                              </label>
+                            <div className="form-group">
+                              <label className="form-label">Pay From Cash Envelope</label>
                               <select
                                 value={selection.cash_envelope_id}
                                 onChange={(e) => handleUpdateSelection(transaction.transaction_id, 'cash_envelope_id', parseInt(e.target.value))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="form-select"
                               >
                                 <option value={0}>Select Cash Envelope</option>
                                 {cashEnvelopes.map(envelope => (
@@ -373,22 +381,21 @@ const CreditCardPaymentWizard: React.FC = () => {
                             </div>
 
                             {/* Payment Amount */}
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Payment Amount
-                              </label>
-                              <div className="flex space-x-2">
+                            <div className="form-group">
+                              <label className="form-label">Payment Amount</label>
+                              <div className="d-flex gap-2">
                                 <input
                                   type="number"
                                   step="0.01"
                                   max={transaction.amount}
                                   value={selection.payment_amount}
                                   onChange={(e) => handleUpdateSelection(transaction.transaction_id, 'payment_amount', parseFloat(e.target.value) || 0)}
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="form-input"
+                                  style={{ flex: 1 }}
                                 />
                                 <button
                                   onClick={() => handleUpdateSelection(transaction.transaction_id, 'payment_amount', transaction.amount)}
-                                  className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                  className="btn btn-sm btn-primary"
                                 >
                                   Full
                                 </button>
@@ -396,22 +403,20 @@ const CreditCardPaymentWizard: React.FC = () => {
                             </div>
 
                             {/* Payment Status */}
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Payment Type
-                              </label>
+                            <div className="form-group">
+                              <label className="form-label">Payment Type</label>
                               <div className="text-sm">
                                 {selection.is_partial ? (
                                   <div>
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span className="badge badge-warning">
                                       Partial Payment
                                     </span>
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-muted mt-1">
                                       Remaining: ${(transaction.amount - selection.payment_amount).toFixed(2)}
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className="badge badge-success">
                                     Full Payment
                                   </span>
                                 )}
@@ -428,18 +433,18 @@ const CreditCardPaymentWizard: React.FC = () => {
           </div>
 
           {/* Cash Envelopes Available */}
-          <div className="bg-green-50 rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-lg font-semibold text-green-800 mb-4">
+          <div className="finance-card mb-5" style={{ backgroundColor: '#d4edda', border: '1px solid #c3e6cb' }}>
+            <h3 className="finance-card-title text-success mb-4">
               Cash Envelopes Available
             </h3>
             {cashEnvelopes.length === 0 ? (
-              <p className="text-gray-500">No cash envelopes with funds</p>
+              <div className="text-muted">No cash envelopes with funds</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="data-grid">
                 {cashEnvelopes.map(envelope => (
-                  <div key={envelope.id} className="bg-white rounded-lg p-4 border-l-4 border-green-400">
-                    <div className="font-medium text-gray-900">{envelope.name}</div>
-                    <div className="text-lg font-semibold text-green-600">
+                  <div key={envelope.id} className="finance-card" style={{ borderLeft: '4px solid #28a745' }}>
+                    <div className="font-semibold text-dark">{envelope.name}</div>
+                    <div className="balance-large text-success currency">
                       ${envelope.current_balance.toFixed(2)}
                     </div>
                   </div>
@@ -450,21 +455,21 @@ const CreditCardPaymentWizard: React.FC = () => {
 
           {/* Payment Summary */}
           {selectedTransactions.length > 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Payment Summary</h3>
+            <div className="finance-card mb-5">
+              <h3 className="finance-card-title mb-4">Payment Summary</h3>
               
               {/* Selected Transactions List */}
-              <div className="space-y-3 mb-6">
-                <h4 className="font-medium text-gray-700">Selected Transactions:</h4>
+              <div className="d-flex flex-col gap-3 mb-5">
+                <h4 className="font-semibold text-muted">Selected Transactions:</h4>
                 {selectedTransactions.map(selection => {
                   const transaction = unpaidTransactions.find(t => t.transaction_id === selection.transaction_id);
                   if (!transaction) return null;
                   
                   return (
-                    <div key={selection.transaction_id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div key={selection.transaction_id} className="d-flex justify-between align-center p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <div className="font-medium">{selection.envelope_name}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-semibold">{selection.envelope_name}</div>
+                        <div className="text-sm text-muted">
                           {transaction.description} • 
                           {selection.is_partial ? 'Partial' : 'Full'} Payment
                           {selection.cash_envelope_name && (
@@ -473,11 +478,11 @@ const CreditCardPaymentWizard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">
+                        <div className="font-semibold currency">
                           ${selection.payment_amount.toFixed(2)}
                         </div>
                         {selection.is_partial && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted">
                             of ${transaction.amount.toFixed(2)}
                           </div>
                         )}
@@ -488,15 +493,15 @@ const CreditCardPaymentWizard: React.FC = () => {
               </div>
 
               {/* Payment Totals */}
-              <div className="border-t pt-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-lg">
+              <div className="border-top pt-4">
+                <div className="d-flex flex-col gap-2">
+                  <div className="d-flex justify-between text-lg">
                     <span>Total Payment Amount:</span>
-                    <span className="font-semibold text-blue-600">
+                    <span className="font-semibold text-primary currency">
                       ${getTotalPaymentAmount().toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="d-flex justify-between text-sm text-muted">
                     <span>Selected Transactions:</span>
                     <span>{selectedTransactions.length}</span>
                   </div>
@@ -511,12 +516,12 @@ const CreditCardPaymentWizard: React.FC = () => {
                     }, {} as Record<string, number>);
                     
                     return Object.keys(envelopeBreakdown).length > 0 && (
-                      <div className="mt-3 pt-3 border-t">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Payment Breakdown by Envelope:</div>
+                      <div className="mt-3 pt-3 border-top">
+                        <div className="text-sm font-semibold text-muted mb-2">Payment Breakdown by Envelope:</div>
                         {Object.entries(envelopeBreakdown).map(([envelopeName, amount]) => (
-                          <div key={envelopeName} className="flex justify-between text-sm text-gray-600">
+                          <div key={envelopeName} className="d-flex justify-between text-sm text-muted">
                             <span>{envelopeName}:</span>
-                            <span>${amount.toFixed(2)}</span>
+                            <span className="currency">${amount.toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
@@ -526,45 +531,32 @@ const CreditCardPaymentWizard: React.FC = () => {
               </div>
             </div>
           ) : unpaidTransactions.length > 0 && (
-            <div className="bg-blue-50 rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Ready to Make a Payment?</h3>
-              <p className="text-blue-700">
+            <div className="finance-card mb-5" style={{ backgroundColor: '#d1ecf1', border: '1px solid #bee5eb' }}>
+              <h3 className="finance-card-title text-info mb-2">Ready to Make a Payment?</h3>
+              <p className="text-info">
                 Select the transactions above that you'd like to pay. You can choose to pay the full amount or enter a partial payment for any transaction.
               </p>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-4">
+          <div className="d-flex justify-end gap-4">
             <button
               onClick={handlePreviewPayment}
               disabled={isLoading || selectedTransactions.length === 0}
-              className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="btn btn-lg btn-secondary"
             >
               Preview Payment
             </button>
             <button
               onClick={handleExecutePayment}
               disabled={isLoading || selectedTransactions.length === 0}
-              className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="btn btn-lg btn-success"
             >
               {isLoading ? 'Processing...' : 'Execute Payment'}
             </button>
           </div>
         </>
-      )}
-
-      {/* Messages */}
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-600">{error}</p>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-600">{successMessage}</p>
-        </div>
       )}
     </div>
   );

@@ -51,6 +51,271 @@ const TransactionEntry: React.FC<TransactionEntryProps> = ({ onNavigateBack }) =
     reference_number: ''
   });
 
+  // Professional CSS injection - permanent solution
+  useEffect(() => {
+    const existingStyle = document.getElementById('transaction-entry-styles');
+    if (!existingStyle) {
+      const style = document.createElement('style');
+      style.id = 'transaction-entry-styles';
+      style.textContent = `
+        /* Professional Transaction Entry Styling */
+        .page-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+          min-height: 100vh;
+          background-color: #f8f9fa;
+        }
+        
+        .page-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #dee2e6;
+        }
+        
+        .page-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #212529;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .back-button {
+          padding: 8px 16px;
+          font-size: 14px;
+          background-color: #6c757d;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          font-family: Arial, sans-serif;
+        }
+        
+        .back-button:hover {
+          background-color: #5a6268;
+        }
+        
+        .form-container {
+          background: white;
+          padding: 24px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          border: 1px solid #e1e8ed;
+        }
+        
+        .form-group {
+          margin-bottom: 16px;
+        }
+        
+        .form-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #495057;
+          margin-bottom: 6px;
+          font-family: Arial, sans-serif;
+        }
+        
+        .form-label.required::after {
+          content: " *";
+          color: #dc3545;
+        }
+        
+        .form-input,
+        .form-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #ced4da;
+          border-radius: 4px;
+          font-size: 14px;
+          font-family: Arial, sans-serif;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          background-color: white;
+        }
+        
+        .form-input:focus,
+        .form-select:focus {
+          outline: none;
+          border-color: #17a2b8;
+          box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+        }
+        
+        .form-input:disabled,
+        .form-select:disabled {
+          background-color: #e9ecef;
+          cursor: not-allowed;
+        }
+        
+        .form-grid-2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        
+        .form-grid-3 {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
+        }
+        
+        .form-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+          margin-top: 24px;
+          flex-wrap: wrap;
+        }
+        
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 24px;
+          font-size: 14px;
+          font-weight: 600;
+          font-family: Arial, sans-serif;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-decoration: none;
+          gap: 8px;
+          line-height: 1;
+          user-select: none;
+        }
+        
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none !important;
+        }
+        
+        .btn-lg {
+          padding: 14px 28px;
+          font-size: 16px;
+          font-weight: 600;
+        }
+        
+        .btn-success {
+          background-color: #28a745;
+          color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+          background-color: #218838;
+        }
+        
+        .message {
+          padding: 12px;
+          border-radius: 4px;
+          margin-bottom: 16px;
+          border: 1px solid;
+          font-family: Arial, sans-serif;
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        
+        .message-success {
+          background-color: #d4edda;
+          color: #155724;
+          border-color: #c3e6cb;
+        }
+        
+        .message-error {
+          background-color: #f8d7da;
+          color: #721c24;
+          border-color: #f5c6cb;
+        }
+        
+        .finance-card {
+          background-color: white;
+          border: 1px solid #e1e8ed;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          transition: box-shadow 0.2s ease, transform 0.2s ease;
+          font-family: Arial, sans-serif;
+          margin-top: 20px;
+        }
+        
+        .finance-card:hover {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+        }
+        
+        .finance-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 16px;
+        }
+        
+        .finance-card-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #212529;
+          margin: 0;
+        }
+        
+        .finance-card-content {
+          margin-bottom: 16px;
+        }
+        
+        .d-flex {
+          display: flex;
+        }
+        
+        .justify-between {
+          justify-content: space-between;
+        }
+        
+        .align-center {
+          align-items: center;
+        }
+        
+        .flex-wrap {
+          flex-wrap: wrap;
+        }
+        
+        .gap-4 {
+          gap: 16px;
+        }
+        
+        .mt-5 {
+          margin-top: 20px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .form-grid-2,
+          .form-grid-3 {
+            grid-template-columns: 1fr;
+          }
+          
+          .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          
+          .form-actions {
+            flex-direction: column;
+            align-items: center;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   // Load accounts and envelopes on component mount
   useEffect(() => {
     loadAccountsAndEnvelopes();
@@ -242,253 +507,171 @@ const TransactionEntry: React.FC<TransactionEntryProps> = ({ onNavigateBack }) =
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <button 
-          onClick={onNavigateBack}
-          style={{
-            padding: '8px 16px',
-            marginRight: '10px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          ← Back to Home
-        </button>
-        <h2 style={{ display: 'inline', margin: 0 }}>📝 Transaction Entry</h2>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">📝 Transaction Entry</h1>
       </div>
 
       {/* Success/Error Messages */}
       {successMessage && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '12px',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          border: '1px solid #c3e6cb'
-        }}>
+        <div className="message message-success">
           ✅ {successMessage}
         </div>
       )}
       
       {errorMessage && (
-        <div style={{
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          padding: '12px',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          border: '1px solid #f5c6cb'
-        }}>
+        <div className="message message-error">
           ❌ {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-          {/* Account Selection */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Account *</label>
-            <select
-              value={formData.account_id}
-              onChange={(e) => handleInputChange('account_id', parseInt(e.target.value))}
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
-            >
-              <option value={0}>Select an account...</option>
-              {accounts.map(account => (
-                <option key={account.id} value={account.id}>
-                  {account.name} ({account.type}) - ${account.current_balance.toFixed(2)}
-                </option>
-              ))}
-            </select>
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          <div className="form-grid-2">
+            {/* Account Selection */}
+            <div className="form-group">
+              <label className="form-label required">Account</label>
+              <select
+                value={formData.account_id}
+                onChange={(e) => handleInputChange('account_id', parseInt(e.target.value))}
+                className="form-select"
+              >
+                <option value={0}>Select an account...</option>
+                {accounts.map(account => (
+                  <option key={account.id} value={account.id}>
+                    {account.name} ({account.type}) - ${account.current_balance.toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Envelope Selection */}
+            <div className="form-group">
+              <label className="form-label required">Envelope</label>
+              <select
+                value={formData.envelope_id}
+                onChange={(e) => handleInputChange('envelope_id', parseInt(e.target.value))}
+                disabled={filteredEnvelopes.length === 0}
+                className="form-select"
+              >
+                <option value={0}>Select an envelope...</option>
+                {filteredEnvelopes.map(envelope => (
+                  <option key={envelope.id} value={envelope.id}>
+                    {envelope.name} ({envelope.type}) - ${envelope.current_balance.toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Envelope Selection */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Envelope *</label>
-            <select
-              value={formData.envelope_id}
-              onChange={(e) => handleInputChange('envelope_id', parseInt(e.target.value))}
-              disabled={filteredEnvelopes.length === 0}
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: filteredEnvelopes.length === 0 ? '#e9ecef' : 'white'
-              }}
-            >
-              <option value={0}>Select an envelope...</option>
-              {filteredEnvelopes.map(envelope => (
-                <option key={envelope.id} value={envelope.id}>
-                  {envelope.name} ({envelope.type}) - ${envelope.current_balance.toFixed(2)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+          <div className="form-grid-3">
+            {/* Amount */}
+            <div className="form-group">
+              <label className="form-label required">Amount</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.amount || ''}
+                onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                placeholder="0.00"
+                className="form-input"
+              />
+            </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-          {/* Amount */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Amount *</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.amount || ''}
-              onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-              placeholder="0.00"
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
-            />
+            {/* Date */}
+            <div className="form-group">
+              <label className="form-label required">Date</label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
+                className="form-input"
+              />
+            </div>
+
+            {/* Reference Number */}
+            <div className="form-group">
+              <label className="form-label">Reference #</label>
+              <input
+                type="text"
+                value={formData.reference_number}
+                onChange={(e) => handleInputChange('reference_number', e.target.value)}
+                placeholder="Check #, Confirmation, etc."
+                className="form-input"
+              />
+            </div>
           </div>
 
-          {/* Date */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Date *</label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleInputChange('date', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-
-          {/* Reference Number */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Reference #</label>
+          {/* Description */}
+          <div className="form-group">
+            <label className="form-label required">Description</label>
             <input
               type="text"
-              value={formData.reference_number}
-              onChange={(e) => handleInputChange('reference_number', e.target.value)}
-              placeholder="Check #, Confirmation, etc."
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Enter transaction description"
+              className="form-input"
             />
           </div>
-        </div>
 
-        {/* Description */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Description *</label>
-          <input
-            type="text"
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Enter transaction description"
-            style={{
-              width: '100%',
-              padding: '8px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px'
-            }}
-          />
-        </div>
+          <div className="form-grid-2">
+            {/* Status */}
+            <div className="form-group">
+              <label className="form-label">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => handleInputChange('status', e.target.value)}
+                disabled={formData.account_id === 0}
+                className="form-select"
+              >
+                {getAvailableStatusOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-          {/* Status */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value)}
-              disabled={formData.account_id === 0}
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: formData.account_id === 0 ? '#e9ecef' : 'white'
-              }}
-            >
-              {getAvailableStatusOptions().map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            {/* Transaction Type */}
+            <div className="form-group">
+              <label className="form-label">Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => handleInputChange('type', e.target.value)}
+                className="form-select"
+              >
+                <option value="debit">Debit (Expense/Spending)</option>
+                <option value="credit">Credit (Income/Payment)</option>
+                <option value="transfer">Transfer</option>
+                <option value="payment">Payment</option>
+              </select>
+            </div>
           </div>
 
-          {/* Transaction Type */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Type</label>
-            <select
-              value={formData.type}
-              onChange={(e) => handleInputChange('type', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
+          {/* Submit Button */}
+          <div className="form-actions">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn btn-lg btn-success"
             >
-              <option value="debit">Debit (Expense/Spending)</option>
-              <option value="credit">Credit (Income/Payment)</option>
-              <option value="transfer">Transfer</option>
-              <option value="payment">Payment</option>
-            </select>
+              {isLoading ? '💾 Saving...' : '💾 Create Transaction'}
+            </button>
           </div>
-        </div>
-
-        {/* Submit Button */}
-        <div style={{ textAlign: 'center' }}>
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              padding: '12px 30px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              backgroundColor: isLoading ? '#6c757d' : '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              minWidth: '150px'
-            }}
-          >
-            {isLoading ? '💾 Saving...' : '💾 Create Transaction'}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
 
       {/* Quick Stats */}
-      <div style={{ marginTop: '30px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px' }}>
-        <h4 style={{ margin: '0 0 10px 0' }}>📊 Quick Stats</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '14px' }}>
-          <div><strong>Total Accounts:</strong> {accounts.length}</div>
-          <div><strong>Total Envelopes:</strong> {envelopes.length}</div>
-          <div><strong>Available Envelopes:</strong> {filteredEnvelopes.length}</div>
+      <div className="finance-card mt-5">
+        <div className="finance-card-header">
+          <h3 className="finance-card-title">📊 Quick Stats</h3>
+        </div>
+        <div className="finance-card-content">
+          <div className="d-flex justify-between align-center flex-wrap gap-4">
+            <div><strong>Total Accounts:</strong> {accounts.length}</div>
+            <div><strong>Total Envelopes:</strong> {envelopes.length}</div>
+            <div><strong>Available Envelopes:</strong> {filteredEnvelopes.length}</div>
+          </div>
         </div>
       </div>
     </div>

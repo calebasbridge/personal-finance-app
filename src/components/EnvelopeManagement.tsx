@@ -239,71 +239,57 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
     }).format(amount);
   };
 
-  const getEnvelopeTypeColor = (type: string): string => {
-    return type === 'cash' ? '#28a745' : '#dc3545';
+  const getEnvelopeTypeBadgeClass = (type: string): string => {
+    return type === 'cash' ? 'badge-cash-envelope' : 'badge-debt-envelope';
   };
 
-  const getAccountTypeColor = (type: string): string => {
+  const getAccountTypeBadgeClass = (type: string): string => {
     switch (type) {
-      case 'checking': return '#3498db';
-      case 'savings': return '#27ae60';
-      case 'credit_card': return '#e74c3c';
-      case 'cash': return '#f39c12';
-      default: return '#95a5a6';
+      case 'checking': return 'badge-checking';
+      case 'savings': return 'badge-savings';
+      case 'credit_card': return 'badge-credit';
+      case 'cash': return 'badge-cash';
+      default: return 'badge-secondary';
     }
+  };
+
+  const getBalanceClass = (balance: number): string => {
+    if (balance > 0) return 'balance-positive';
+    if (balance < 0) return 'balance-negative';
+    return 'balance-zero';
   };
 
   if (isLoading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div className="text-center p-5">
         <div>Loading envelopes...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
+    <div className="p-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">📂 Envelope Management</h2>
+        </div>
         <button 
           onClick={onNavigateBack}
-          style={{
-            padding: '8px 16px',
-            marginRight: '10px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          className="back-button"
         >
           ← Back to Home
         </button>
-        <h2 style={{ display: 'inline', margin: 0 }}>📂 Envelope Management</h2>
       </div>
 
       {/* Success/Error Messages */}
       {successMessage && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '12px',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          border: '1px solid #c3e6cb'
-        }}>
+        <div className="message message-success">
           ✅ {successMessage}
         </div>
       )}
       
       {error && (
-        <div style={{
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          padding: '12px',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          border: '1px solid #f5c6cb'
-        }}>
+        <div className="message message-error">
           ❌ {error}
         </div>
       )}
@@ -311,43 +297,29 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
       {!showForm ? (
         <>
           {/* Header with Add Button */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="d-flex justify-between align-center mb-5">
             <div>
-              <h3 style={{ margin: '0 0 5px 0' }}>Envelope Overview</h3>
-              <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+              <h3 className="m-0 mb-1">Envelope Overview</h3>
+              <p className="m-0 text-muted text-sm">
                 {filteredEnvelopes.length} of {envelopes.length} envelopes
               </p>
             </div>
             <button
               onClick={handleAddNew}
-              style={{
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: '600',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
+              className="btn btn-lg btn-success"
             >
               + Add New Envelope
             </button>
           </div>
 
           {/* Filters */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div className="d-flex gap-4 mb-5 flex-wrap">
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Account:</label>
+              <label className="form-label">Filter by Account:</label>
               <select
                 value={filterAccountId}
                 onChange={(e) => setFilterAccountId(parseInt(e.target.value))}
-                style={{
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
+                className="form-select"
               >
                 <option value={0}>All Accounts</option>
                 {accounts.map(account => (
@@ -358,132 +330,86 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
               </select>
             </div>
             
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Search:</label>
+            <div className="flex-1">
+              <label className="form-label">Search:</label>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search envelopes by name or description..."
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
+                className="form-input"
               />
             </div>
           </div>
 
           {/* Envelope Grid */}
           {filteredEnvelopes.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+            <div className="text-center p-10 bg-gray-50 rounded-lg">
               <h3>No Envelopes Found</h3>
               <p>Create your first envelope to get started with budget management.</p>
               <button
                 onClick={handleAddNew}
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  backgroundColor: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-lg btn-success"
               >
                 Create First Envelope
               </button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+            <div className="data-grid">
               {filteredEnvelopes.map(envelope => (
-                <div key={envelope.id} style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e1e8ed',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 5px 0', fontSize: '18px' }}>{envelope.name}</h4>
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: 'white',
-                          backgroundColor: getEnvelopeTypeColor(envelope.type)
-                        }}>
+                <div key={envelope.id} className="finance-card">
+                  <div className="finance-card-header">
+                    <div className="flex-1">
+                      <h4 className="finance-card-title">{envelope.name}</h4>
+                      <div className="d-flex gap-2 mt-2">
+                        <span className={`badge ${getEnvelopeTypeBadgeClass(envelope.type)}`}>
                           {envelope.type === 'cash' ? '💰 Cash' : '💳 Debt'}
                         </span>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: 'white',
-                          backgroundColor: getAccountTypeColor(envelope.account_type)
-                        }}>
+                        <span className={`badge ${getAccountTypeBadgeClass(envelope.account_type)}`}>
                           {envelope.account_name}
                         </span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '5px' }}>
+                    <div className="d-flex gap-1">
                       <button
                         onClick={() => handleEdit(envelope)}
-                        style={{
-                          padding: '6px',
-                          backgroundColor: '#17a2b8',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="btn btn-sm btn-primary"
+                        title="Edit envelope"
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => handleDelete(envelope)}
                         disabled={envelope.name.toLowerCase().includes('unassigned')}
-                        style={{
-                          padding: '6px',
-                          backgroundColor: envelope.name.toLowerCase().includes('unassigned') ? '#6c757d' : '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: envelope.name.toLowerCase().includes('unassigned') ? 'not-allowed' : 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="btn btn-sm btn-danger"
+                        title={envelope.name.toLowerCase().includes('unassigned') ? 'Cannot delete unassigned envelopes' : 'Delete envelope'}
                       >
                         🗑️
                       </button>
                     </div>
                   </div>
                   
-                  <div style={{ marginBottom: '10px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: getEnvelopeTypeColor(envelope.type) }}>
+                  <div className="finance-card-content">
+                    <div className={`balance-large currency ${getBalanceClass(envelope.current_balance)}`}>
                       {formatCurrency(envelope.current_balance)}
                     </div>
                     {envelope.spending_limit && (
-                      <div style={{ fontSize: '14px', color: '#666' }}>
+                      <div className="text-sm text-muted">
                         Limit: {formatCurrency(envelope.spending_limit)}
                       </div>
                     )}
                   </div>
                   
                   {envelope.description && (
-                    <div style={{ fontSize: '14px', color: '#666', fontStyle: 'italic' }}>
+                    <div className="text-sm text-muted mb-3" style={{ fontStyle: 'italic' }}>
                       {envelope.description}
                     </div>
                   )}
                   
-                  <div style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>
-                    Created: {new Date(envelope.created_at).toLocaleDateString()}
+                  <div className="finance-card-footer">
+                    <div className="text-xs text-muted">
+                      Created: {new Date(envelope.created_at).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -492,42 +418,30 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
         </>
       ) : (
         /* Envelope Form */
-        <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' }}>
-          <h3 style={{ margin: '0 0 20px 0' }}>
+        <div className="form-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <h3 className="m-0 mb-5">
             {editingEnvelope ? `Edit Envelope: ${editingEnvelope.name}` : 'Create New Envelope'}
           </h3>
           
           <form onSubmit={handleFormSubmit}>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Envelope Name *</label>
+            <div className="form-group">
+              <label className="form-label required">Envelope Name</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., Groceries, Car Payment, Emergency Fund"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
+                className="form-input"
               />
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Account *</label>
+            <div className="form-grid-2">
+              <div className="form-group">
+                <label className="form-label required">Account</label>
                 <select
                   value={formData.account_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, account_id: parseInt(e.target.value) }))}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
+                  className="form-select"
                 >
                   <option value={0}>Select Account</option>
                   {accounts.map(account => (
@@ -538,18 +452,12 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
                 </select>
               </div>
               
-              <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Type *</label>
+              <div className="form-group">
+                <label className="form-label required">Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'cash' | 'debt' }))}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
+                  className="form-select"
                 >
                   <option value="cash">💰 Cash (Asset Tracking)</option>
                   <option value="debt">💳 Debt (Spending Category)</option>
@@ -557,88 +465,53 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
               </div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Current Balance</label>
+            <div className="form-grid-2">
+              <div className="form-group">
+                <label className="form-label">Current Balance</label>
                 <input
                   type="number"
                   step="0.01"
                   value={formData.current_balance}
                   onChange={(e) => setFormData(prev => ({ ...prev, current_balance: parseFloat(e.target.value) || 0 }))}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
+                  className="form-input"
                 />
               </div>
               
-              <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Spending Limit (Optional)</label>
+              <div className="form-group">
+                <label className="form-label">Spending Limit (Optional)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={formData.spending_limit}
                   onChange={(e) => setFormData(prev => ({ ...prev, spending_limit: e.target.value }))}
                   placeholder="No limit"
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
+                  className="form-input"
                 />
               </div>
             </div>
             
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Description (Optional)</label>
+            <div className="form-group">
+              <label className="form-label">Description (Optional)</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Purpose of this envelope, notes, etc."
                 rows={3}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  resize: 'vertical'
-                }}
+                className="form-textarea"
               />
             </div>
             
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <div className="form-actions">
               <button
                 type="button"
                 onClick={handleCancel}
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                style={{
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  backgroundColor: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-success"
               >
                 {editingEnvelope ? 'Update Envelope' : 'Create Envelope'}
               </button>

@@ -24,4 +24,17 @@ Thumbs.db
 
 # Logs
 *.log
-npm-debug.log* 
+npm-debug.log*
+
+# Development and build scripts (keep only master-build.bat)
+*.bat
+!master-build.bat
+!simple-github-push.bat
+
+# Development artifacts
+build-*.txt
+*.backup.removed
+profile-globals-backup.d.ts
+*completion*.md
+*_status.md
+diagnose-*.html 

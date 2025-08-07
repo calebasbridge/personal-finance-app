@@ -16,7 +16,6 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ onNavigateHome })
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
-  const [breadcrumbHover, setBreadcrumbHover] = useState(false);
 
   useEffect(() => {
     loadAccounts();
@@ -162,41 +161,22 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ onNavigateHome })
 
   return (
     <div style={styles.container}>
-      <header style={styles.header}>
-        <div style={styles.breadcrumb}>
-          <span 
-            style={{
-              ...styles.breadcrumbHome,
-              ...(breadcrumbHover ? styles.breadcrumbHover : {})
-            }}
-            onClick={onNavigateHome}
-            onMouseEnter={() => setBreadcrumbHover(true)}
-            onMouseLeave={() => setBreadcrumbHover(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onNavigateHome();
-              }
-            }}
-            tabIndex={0}
-            role="button"
-            aria-label="Navigate to home"
-          >
-            Personal Finance App
-          </span>
-          <span style={styles.breadcrumbSeparator}>›</span>
-          <span style={styles.breadcrumbCurrent}>{getPageTitle()}</span>
-        </div>
-        
-        {viewMode === 'form' && (
+      {/* Form mode navigation */}
+      {viewMode === 'form' && (
+        <header style={styles.header}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#212529' }}>
+              {getPageTitle()}
+            </h1>
+          </div>
           <button
             onClick={handleCancel}
             style={styles.backButton}
           >
             ← Back to Accounts
           </button>
-        )}
-      </header>
+        </header>
+      )}
 
       {/* Global notifications */}
       {error && (
@@ -276,32 +256,7 @@ const styles = {
     top: 0,
     zIndex: 10,
   },
-  breadcrumb: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px',
-  },
-  breadcrumbHome: {
-    color: '#3498db',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    transition: 'color 0.2s ease, text-decoration 0.2s ease',
-    padding: '2px 4px',
-    borderRadius: '2px',
-    outline: 'none',
-  },
-  breadcrumbHover: {
-    color: '#2980b9',
-    textDecoration: 'underline',
-  },
-  breadcrumbSeparator: {
-    color: '#bdc3c7',
-  },
-  breadcrumbCurrent: {
-    color: '#2c3e50',
-    fontWeight: '500',
-  },
+
   backButton: {
     padding: '8px 16px',
     fontSize: '14px',

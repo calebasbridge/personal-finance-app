@@ -41,26 +41,26 @@ const AccountItem: React.FC<AccountItemProps> = ({ account, onEdit, onDelete }) 
     }
   };
 
-  const getAccountTypeColor = (type: string): string => {
+  const getAccountTypeBadgeClass = (type: string): string => {
     switch (type) {
       case 'checking':
-        return '#3498db';
+        return 'badge badge-checking';
       case 'savings':
-        return '#27ae60';
+        return 'badge badge-savings';
       case 'credit_card':
-        return '#e74c3c';
+        return 'badge badge-credit';
       case 'cash':
-        return '#f39c12';
+        return 'badge badge-cash';
       default:
-        return '#95a5a6';
+        return 'badge badge-secondary';
     }
   };
 
-  const getBalanceColor = (balance: number, type: string): string => {
+  const getBalanceClass = (balance: number, type: string): string => {
     if (type === 'credit_card') {
-      return balance > 0 ? '#e74c3c' : '#27ae60';
+      return balance > 0 ? 'balance-negative' : 'balance-positive';
     }
-    return balance >= 0 ? '#27ae60' : '#e74c3c';
+    return balance >= 0 ? 'balance-positive' : 'balance-negative';
   };
 
   const handleDelete = async () => {
@@ -81,29 +81,26 @@ const AccountItem: React.FC<AccountItemProps> = ({ account, onEdit, onDelete }) 
 
   if (showDeleteConfirm) {
     return (
-      <div style={styles.card}>
-        <div style={styles.confirmDelete}>
-          <h3 style={styles.confirmTitle}>Confirm Delete</h3>
-          <p style={styles.confirmMessage}>
+      <div className="finance-card">
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-error mb-3">Confirm Delete</h3>
+          <p className="text-base text-dark mb-2">
             Are you sure you want to delete "{account.name}"?
           </p>
-          <p style={styles.confirmWarning}>
+          <p className="text-sm text-error mb-5" style={{ fontStyle: 'italic' }}>
             This action cannot be undone.
           </p>
-          <div style={styles.confirmButtons}>
+          <div className="d-flex gap-3 justify-center">
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              style={styles.cancelButton}
+              className="btn btn-secondary"
               disabled={isDeleting}
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              style={{
-                ...styles.deleteButton,
-                ...(isDeleting ? styles.buttonDisabled : {})
-              }}
+              className={`btn btn-danger ${isDeleting ? 'disabled' : ''}`}
               disabled={isDeleting}
             >
               {isDeleting ? 'Deleting...' : 'Delete Account'}
@@ -115,30 +112,26 @@ const AccountItem: React.FC<AccountItemProps> = ({ account, onEdit, onDelete }) 
   }
 
   return (
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <div style={styles.accountInfo}>
-          <h3 style={styles.accountName}>{account.name}</h3>
-          <span
-            style={{
-              ...styles.accountType,
-              backgroundColor: getAccountTypeColor(account.type),
-            }}
-          >
+    <div className="finance-card">
+      <div className="finance-card-header">
+        <div className="d-flex flex-col gap-2">
+          <h3 className="finance-card-title">{account.name}</h3>
+          <span className={getAccountTypeBadgeClass(account.type)}>
             {getAccountTypeDisplay(account.type)}
           </span>
         </div>
-        <div style={styles.actions}>
+        <div className="d-flex gap-2">
           <button
             onClick={handleEdit}
-            style={styles.editButton}
+            className="btn btn-sm btn-outline"
             title="Edit Account"
           >
             ✏️
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            style={styles.deleteActionButton}
+            className="btn btn-sm btn-outline"
+            style={{ borderColor: '#e74c3c', color: '#e74c3c' }}
             title="Delete Account"
           >
             🗑️
@@ -146,197 +139,35 @@ const AccountItem: React.FC<AccountItemProps> = ({ account, onEdit, onDelete }) 
         </div>
       </div>
 
-      <div style={styles.balanceSection}>
-        <div style={styles.balanceItem}>
-          <span style={styles.balanceLabel}>Current Balance:</span>
-          <span
-            style={{
-              ...styles.balanceValue,
-              color: getBalanceColor(account.current_balance, account.type),
-            }}
-          >
+      <div className="finance-card-content">
+        <div className="d-flex justify-between align-center mb-2">
+          <span className="text-sm text-muted font-medium">Current Balance:</span>
+          <span className={`text-lg font-bold currency ${getBalanceClass(account.current_balance, account.type)}`}>
             {formatCurrency(account.current_balance)}
           </span>
         </div>
         {account.initial_balance !== account.current_balance && (
-          <div style={styles.balanceItem}>
-            <span style={styles.balanceLabel}>Initial Balance:</span>
-            <span style={styles.initialBalance}>
+          <div className="d-flex justify-between align-center">
+            <span className="text-sm text-muted font-medium">Initial Balance:</span>
+            <span className="text-sm text-muted currency">
               {formatCurrency(account.initial_balance)}
             </span>
           </div>
         )}
       </div>
 
-      <div style={styles.footer}>
-        <span style={styles.dateInfo}>
+      <div className="finance-card-footer">
+        <span className="text-xs text-muted">
           Created: {formatDate(account.created_at)}
         </span>
         {account.updated_at !== account.created_at && (
-          <span style={styles.dateInfo}>
+          <span className="text-xs text-muted">
             Updated: {formatDate(account.updated_at)}
           </span>
         )}
       </div>
     </div>
   );
-};
-
-const styles = {
-  card: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e1e8ed',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    transition: 'box-shadow 0.2s ease, transform 0.2s ease',
-    cursor: 'default',
-    '&:hover': {
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-      transform: 'translateY(-2px)',
-    },
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '16px',
-  },
-  accountInfo: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '8px',
-  },
-  accountName: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    margin: '0',
-  },
-  accountType: {
-    display: 'inline-block',
-    padding: '4px 12px',
-    borderRadius: '16px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: 'white',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  actions: {
-    display: 'flex',
-    gap: '8px',
-  },
-  editButton: {
-    padding: '8px',
-    backgroundColor: 'transparent',
-    border: '1px solid #3498db',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#3498db',
-    },
-  },
-  deleteActionButton: {
-    padding: '8px',
-    backgroundColor: 'transparent',
-    border: '1px solid #e74c3c',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#e74c3c',
-    },
-  },
-  balanceSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '8px',
-    marginBottom: '16px',
-  },
-  balanceItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  balanceLabel: {
-    fontSize: '14px',
-    color: '#7f8c8d',
-    fontWeight: '500',
-  },
-  balanceValue: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-  },
-  initialBalance: {
-    fontSize: '14px',
-    color: '#95a5a6',
-  },
-  footer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: '12px',
-    borderTop: '1px solid #ecf0f1',
-    flexWrap: 'wrap' as const,
-    gap: '8px',
-  },
-  dateInfo: {
-    fontSize: '12px',
-    color: '#95a5a6',
-  },
-  confirmDelete: {
-    textAlign: 'center' as const,
-  },
-  confirmTitle: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#e74c3c',
-    margin: '0 0 12px 0',
-  },
-  confirmMessage: {
-    fontSize: '16px',
-    color: '#2c3e50',
-    margin: '0 0 8px 0',
-  },
-  confirmWarning: {
-    fontSize: '14px',
-    color: '#e74c3c',
-    margin: '0 0 20px 0',
-    fontStyle: 'italic',
-  },
-  confirmButtons: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    padding: '10px 20px',
-    fontSize: '14px',
-    backgroundColor: '#95a5a6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-  },
-  deleteButton: {
-    padding: '10px 20px',
-    fontSize: '14px',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-  },
-  buttonDisabled: {
-    backgroundColor: '#bdc3c7',
-    cursor: 'not-allowed',
-  },
 };
 
 export default AccountItem;

@@ -1,4 +1,4 @@
-// Enhanced ProfileManagementDialog.tsx with Password Protection
+// Enhanced ProfileManagementDialog.tsx with Fixed Z-Index Layering
 import React, { useState, useEffect } from 'react';
 import { safeProfileAPI } from '../utils/profileAPI';
 
@@ -34,6 +34,7 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
   const [switchPassword, setSwitchPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -119,6 +120,7 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
     if (profile?.hasPassword) {
       setPendingSwitch(profileName);
       setSwitchPassword('');
+      setPasswordError(null);
       return;
     }
 
@@ -128,26 +130,63 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
   const performSwitch = async (profileName: string, password?: string) => {
     try {
       setLoading(true);
+      setPasswordError(null);
+      
+      // First verify password if profile is protected
+      if (password && profiles.find(p => p.name === profileName)?.hasPassword) {
+        console.log('Verifying password for profile:', profileName);
+        const verification = await safeProfileAPI.verifyPassword(profileName, password);
+        if (!verification.valid) {
+          setPasswordError('Incorrect password. Please try again.');
+          return;
+        }
+      }
+      
+      // Now attempt the switch
+      console.log('Attempting to switch to profile:', profileName);
       await safeProfileAPI.switchTo(profileName, password);
+      
+      // Success - close all dialogs and refresh
       await loadProfiles();
       onProfileChanged();
       setError(null);
+      setPasswordError(null);
       setPendingSwitch(null);
       setSwitchPassword('');
+      
       // Close dialog and refresh page
       onClose();
       window.location.reload();
+      
     } catch (err) {
       console.error('Failed to switch profile:', err);
-      setError('Failed to switch profile. Check password if protected.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      
+      // Handle specific error types
+      if (errorMessage.includes('Invalid password')) {
+        setPasswordError('Incorrect password. Please try again.');
+      } else if (errorMessage.includes('not found')) {
+        setError('Profile not found. Please refresh and try again.');
+      } else if (errorMessage.includes('password')) {
+        setPasswordError('Password verification failed. Please check your password.');
+      } else {
+        setError(`Failed to switch profile: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handlePasswordSwitch = async () => {
-    if (!switchPassword && profiles.find(p => p.name === pendingSwitch)?.hasPassword) {
-      setError('Password is required for this profile');
+    const profile = profiles.find(p => p.name === pendingSwitch);
+    
+    if (!profile) {
+      setPasswordError('Profile not found');
+      return;
+    }
+    
+    if (profile.hasPassword && !switchPassword.trim()) {
+      setPasswordError('Password is required for this profile');
       return;
     }
     
@@ -195,361 +234,78 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
     setPendingSwitch(null);
     setSwitchPassword('');
     setError(null);
+    setPasswordError(null);
     onClose();
   };
 
   if (!isOpen) return null;
 
-  const styles = {
-    dialogOverlay: {
-      position: 'fixed' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.7)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 2000,
-    },
-    dialogContent: {
-      background: '#1a1a1a',
-      borderRadius: '8px',
-      width: '90%',
-      maxWidth: '600px',
-      maxHeight: '80vh',
-      overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-    },
-    dialogHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '20px',
-      borderBottom: '1px solid #333',
-    },
-    dialogTitle: {
-      margin: 0,
-      color: '#ffffff',
-      fontSize: '24px',
-    },
-    closeButton: {
-      background: 'none',
-      border: 'none',
-      color: '#888',
-      fontSize: '24px',
-      cursor: 'pointer',
-      padding: 0,
-      width: '32px',
-      height: '32px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '4px',
-    },
-    dialogBody: {
-      padding: '20px',
-      maxHeight: '60vh',
-      overflowY: 'auto' as const,
-    },
-    errorMessage: {
-      background: '#dc2626',
-      color: 'white',
-      padding: '12px',
-      borderRadius: '6px',
-      marginBottom: '20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    loading: {
-      textAlign: 'center' as const,
-      color: '#888',
-      padding: '20px',
-    },
-    section: {
-      marginBottom: '32px',
-    },
-    sectionTitle: {
-      margin: '0 0 16px 0',
-      color: '#ffffff',
-      fontSize: '18px',
-    },
-    profilesList: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '12px',
-    },
-    profileItem: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '16px',
-      background: '#2a2a2a',
-      border: '1px solid #3a3a3a',
-      borderRadius: '6px',
-    },
-    profileItemActive: {
-      borderColor: '#1e40af',
-      background: '#1e3a8a',
-    },
-    profileInfo: {
-      flex: 1,
-    },
-    profileHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      marginBottom: '4px',
-    },
-    profileName: {
-      color: '#ffffff',
-      fontWeight: 600,
-      fontSize: '16px',
-    },
-    activeBadge: {
-      background: '#10b981',
-      color: 'white',
-      padding: '2px 8px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: 500,
-    },
-    passwordBadge: {
-      background: '#f59e0b',
-      color: 'white',
-      padding: '2px 8px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: 500,
-    },
-    profileDescription: {
-      color: '#888',
-      fontSize: '14px',
-      marginBottom: '4px',
-    },
-    profileDate: {
-      color: '#666',
-      fontSize: '12px',
-    },
-    profileActions: {
-      display: 'flex',
-      gap: '8px',
-    },
-    actionButton: {
-      padding: '6px 12px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: 500,
-    },
-    switchButton: {
-      background: '#1e40af',
-      color: 'white',
-    },
-    deleteButton: {
-      background: '#dc2626',
-      color: 'white',
-    },
-    createNewButton: {
-      background: '#10b981',
-      color: 'white',
-      border: 'none',
-      padding: '12px 24px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: 500,
-    },
-    createForm: {
-      background: '#2a2a2a',
-      padding: '20px',
-      borderRadius: '6px',
-      border: '1px solid #3a3a3a',
-    },
-    formGroup: {
-      marginBottom: '16px',
-    },
-    formLabel: {
-      display: 'block',
-      marginBottom: '6px',
-      color: '#ffffff',
-      fontWeight: 500,
-    },
-    formInput: {
-      width: '100%',
-      padding: '10px',
-      background: '#1a1a1a',
-      border: '1px solid #4a4a4a',
-      borderRadius: '4px',
-      color: '#ffffff',
-      fontSize: '14px',
-      boxSizing: 'border-box' as const,
-    },
-    checkboxGroup: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      marginBottom: '16px',
-    },
-    checkbox: {
-      width: '16px',
-      height: '16px',
-    },
-    checkboxLabel: {
-      color: '#ffffff',
-      fontSize: '14px',
-      cursor: 'pointer',
-    },
-    formActions: {
-      display: 'flex',
-      gap: '12px',
-      justifyContent: 'flex-end',
-    },
-    cancelButton: {
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: 500,
-      background: '#4a4a4a',
-      color: 'white',
-    },
-    createButton: {
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: 500,
-      background: '#10b981',
-      color: 'white',
-    },
-    passwordModal: {
-      position: 'fixed' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 2100,
-    },
-    passwordModalContent: {
-      background: '#1a1a1a',
-      borderRadius: '8px',
-      padding: '24px',
-      width: '90%',
-      maxWidth: '400px',
-      border: '1px solid #3a3a3a',
-    },
-    passwordModalTitle: {
-      margin: '0 0 16px 0',
-      color: '#ffffff',
-      fontSize: '18px',
-      textAlign: 'center' as const,
-    },
-    passwordModalActions: {
-      display: 'flex',
-      gap: '12px',
-      justifyContent: 'flex-end',
-      marginTop: '16px',
-    },
-  };
-
   return (
-    <div style={styles.dialogOverlay}>
-      <div style={styles.dialogContent}>
-        <div style={styles.dialogHeader}>
-          <h2 style={styles.dialogTitle}>Manage Profiles</h2>
-          <button 
-            style={styles.closeButton} 
-            onClick={handleClose}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#ffffff';
-              e.currentTarget.style.background = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#888';
-              e.currentTarget.style.background = 'none';
-            }}
-          >
+    <div className="modal-overlay" style={{ zIndex: 2000 }}>
+      <div className="modal-content" style={{ maxWidth: '600px', maxHeight: '80vh' }}>
+        <div className="modal-header">
+          <h2 className="modal-title">Manage Profiles</h2>
+          <button className="modal-close-btn" onClick={handleClose}>
             ×
           </button>
         </div>
 
-        <div style={styles.dialogBody}>
+        <div className="modal-body">
           {error && (
-            <div style={styles.errorMessage}>
+            <div className="message message-error">
               <span>⚠️</span>
               {error}
             </div>
           )}
 
           {/* Existing Profiles */}
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Existing Profiles</h3>
+          <div className="section-group">
+            <h3 className="section-title">Existing Profiles</h3>
             {loading && profiles.length === 0 ? (
-              <div style={styles.loading}>Loading profiles...</div>
+              <div className="text-center text-muted">Loading profiles...</div>
             ) : (
-              <div style={styles.profilesList}>
+              <div className="d-flex flex-col gap-3">
                 {profiles.map((profile) => (
                   <div 
                     key={profile.name} 
-                    style={{
-                      ...styles.profileItem,
-                      ...(profile.isActive ? styles.profileItemActive : {})
-                    }}
+                    className={`finance-card ${profile.isActive ? 'border-primary' : ''}`}
                   >
-                    <div style={styles.profileInfo}>
-                      <div style={styles.profileHeader}>
-                        <span style={styles.profileName}>{profile.displayName || profile.name}</span>
-                        {profile.isActive && <span style={styles.activeBadge}>Active</span>}
-                        {profile.hasPassword && <span style={styles.passwordBadge}>🔒 Protected</span>}
+                    <div className="finance-card-content">
+                      <div className="d-flex justify-between align-center">
+                        <div className="flex-1">
+                          <div className="d-flex align-center gap-3 mb-1">
+                            <span className="font-semibold text-lg text-dark">{profile.displayName || profile.name}</span>
+                            {profile.isActive && <span className="badge badge-success">ACTIVE</span>}
+                            {profile.hasPassword && <span className="badge badge-warning">🔒 PROTECTED</span>}
+                          </div>
+                          {profile.description && (
+                            <div className="text-muted mb-1">{profile.description}</div>
+                          )}
+                          <div className="text-xs text-muted">
+                            Created: {new Date(profile.created).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="d-flex gap-2">
+                          {!profile.isActive && (
+                            <button
+                              className="btn btn-sm btn-primary"
+                              onClick={() => handleSwitchProfile(profile.name)}
+                              disabled={loading}
+                            >
+                              Switch
+                            </button>
+                          )}
+                          {!profile.isActive && (
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleDeleteProfile(profile.name)}
+                              disabled={loading}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      {profile.description && (
-                        <div style={styles.profileDescription}>{profile.description}</div>
-                      )}
-                      <div style={styles.profileDate}>
-                        Created: {new Date(profile.created).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div style={styles.profileActions}>
-                      {!profile.isActive && (
-                        <button
-                          style={{...styles.actionButton, ...styles.switchButton}}
-                          onClick={() => handleSwitchProfile(profile.name)}
-                          disabled={loading}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#1e3a8a';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#1e40af';
-                          }}
-                        >
-                          Switch
-                        </button>
-                      )}
-                      {!profile.isActive && (
-                        <button
-                          style={{...styles.actionButton, ...styles.deleteButton}}
-                          onClick={() => handleDeleteProfile(profile.name)}
-                          disabled={loading}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#b91c1c';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#dc2626';
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -558,70 +314,58 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
           </div>
 
           {/* Create New Profile */}
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Create New Profile</h3>
+          <div className="section-group">
+            <h3 className="section-title">Create New Profile</h3>
             {!isCreating ? (
               <button
-                style={styles.createNewButton}
+                className="btn btn-success"
                 onClick={() => setIsCreating(true)}
                 disabled={loading}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#059669';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#10b981';
-                }}
               >
                 + Create New Profile
               </button>
             ) : (
-              <div style={styles.createForm}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel} htmlFor="profileName">Profile Name *</label>
+              <div className="form-container">
+                <div className="form-group">
+                  <label className="form-label required" htmlFor="profileName">Profile Name</label>
                   <input
                     id="profileName"
                     type="text"
+                    className="form-input"
                     value={newProfileName}
                     onChange={(e) => setNewProfileName(e.target.value)}
                     placeholder="e.g., Personal, Business, Family"
                     maxLength={50}
                     disabled={loading}
-                    style={{
-                      ...styles.formInput,
-                      ...(loading ? { opacity: 0.5 } : {})
-                    }}
                   />
                 </div>
                 
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel} htmlFor="profileDescription">Description (Optional)</label>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="profileDescription">Description (Optional)</label>
                   <input
                     id="profileDescription"
                     type="text"
+                    className="form-input"
                     value={newProfileDescription}
                     onChange={(e) => setNewProfileDescription(e.target.value)}
                     placeholder="Brief description of this profile"
                     maxLength={200}
                     disabled={loading}
-                    style={{
-                      ...styles.formInput,
-                      ...(loading ? { opacity: 0.5 } : {})
-                    }}
                   />
                 </div>
 
-                <div style={styles.checkboxGroup}>
+                <div className="d-flex align-center gap-2 mb-3">
                   <input
                     id="usePassword"
                     type="checkbox"
                     checked={usePassword}
                     onChange={(e) => setUsePassword(e.target.checked)}
                     disabled={loading}
-                    style={styles.checkbox}
                   />
                   <label 
                     htmlFor="usePassword" 
-                    style={styles.checkboxLabel}
+                    className="form-label mb-0"
+                    style={{ cursor: 'pointer' }}
                     onClick={() => !loading && setUsePassword(!usePassword)}
                   >
                     🔒 Password protect this profile
@@ -630,53 +374,44 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
 
                 {usePassword && (
                   <>
-                    <div style={styles.formGroup}>
-                      <label style={styles.formLabel} htmlFor="profilePassword">Password *</label>
+                    <div className="form-group">
+                      <label className="form-label required" htmlFor="profilePassword">Password</label>
                       <input
                         id="profilePassword"
                         type="password"
+                        className="form-input"
                         value={newProfilePassword}
                         onChange={(e) => setNewProfilePassword(e.target.value)}
                         placeholder="Enter password (min 4 characters)"
                         disabled={loading}
-                        style={{
-                          ...styles.formInput,
-                          ...(loading ? { opacity: 0.5 } : {})
-                        }}
                       />
                     </div>
                     
-                    <div style={styles.formGroup}>
-                      <label style={styles.formLabel} htmlFor="confirmPassword">Confirm Password *</label>
+                    <div className="form-group">
+                      <label className="form-label required" htmlFor="confirmPassword">Confirm Password</label>
                       <input
                         id="confirmPassword"
                         type="password"
+                        className="form-input"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm password"
                         disabled={loading}
-                        style={{
-                          ...styles.formInput,
-                          ...(loading ? { opacity: 0.5 } : {})
-                        }}
                       />
                     </div>
                   </>
                 )}
 
-                <div style={styles.formActions}>
+                <div className="form-actions">
                   <button
-                    style={styles.cancelButton}
+                    className="btn btn-secondary"
                     onClick={() => setIsCreating(false)}
                     disabled={loading}
                   >
                     Cancel
                   </button>
                   <button
-                    style={{
-                      ...styles.createButton,
-                      ...(loading || !newProfileName.trim() ? { opacity: 0.5, cursor: 'not-allowed' } : {})
-                    }}
+                    className={`btn btn-success ${loading || !newProfileName.trim() ? 'disabled' : ''}`}
                     onClick={handleCreateProfile}
                     disabled={loading || !newProfileName.trim()}
                   >
@@ -689,45 +424,68 @@ const ProfileManagementDialog: React.FC<ProfileManagementDialogProps> = ({
         </div>
       </div>
 
-      {/* Password Modal for Profile Switching */}
+      {/* Password Modal for Profile Switching - HIGHEST Z-INDEX */}
       {pendingSwitch && (
-        <div style={styles.passwordModal}>
-          <div style={styles.passwordModalContent}>
-            <h3 style={styles.passwordModalTitle}>
-              Enter Password for "{profiles.find(p => p.name === pendingSwitch)?.displayName}"
-            </h3>
-            <div style={styles.formGroup}>
-              <input
-                type="password"
-                value={switchPassword}
-                onChange={(e) => setSwitchPassword(e.target.value)}
-                placeholder="Enter profile password"
-                style={styles.formInput}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handlePasswordSwitch();
-                  }
-                }}
-                autoFocus
-              />
+        <div className="modal-overlay" style={{ zIndex: 4000 }}>
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title text-center">
+                🔒 Enter Password
+              </h3>
+              <div className="text-center text-muted">
+                Profile: "{profiles.find(p => p.name === pendingSwitch)?.displayName}"
+              </div>
             </div>
-            <div style={styles.passwordModalActions}>
-              <button
-                style={styles.cancelButton}
-                onClick={() => {
-                  setPendingSwitch(null);
-                  setSwitchPassword('');
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                style={styles.createButton}
-                onClick={handlePasswordSwitch}
-                disabled={loading}
-              >
-                {loading ? 'Switching...' : 'Switch Profile'}
-              </button>
+            <div className="modal-body">
+              {passwordError && (
+                <div className="message message-error mb-3">
+                  <span>⚠️</span>
+                  {passwordError}
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label className="form-label" htmlFor="switchPassword">Password</label>
+                <input
+                  id="switchPassword"
+                  type="password"
+                  className="form-input"
+                  value={switchPassword}
+                  onChange={(e) => {
+                    setSwitchPassword(e.target.value);
+                    setPasswordError(null); // Clear error when user types
+                  }}
+                  placeholder="Enter profile password"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && switchPassword.trim()) {
+                      handlePasswordSwitch();
+                    }
+                  }}
+                  autoFocus
+                  disabled={loading}
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setPendingSwitch(null);
+                    setSwitchPassword('');
+                    setPasswordError(null);
+                  }}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={handlePasswordSwitch}
+                  disabled={loading || !switchPassword.trim()}
+                >
+                  {loading ? 'Switching...' : 'Switch Profile'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
