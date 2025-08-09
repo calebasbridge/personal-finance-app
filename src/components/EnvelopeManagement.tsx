@@ -273,12 +273,6 @@ const EnvelopeManagement: React.FC<EnvelopeManagementProps> = ({ onNavigateBack 
         <div>
           <h2 className="page-title">📂 Envelope Management</h2>
         </div>
-        <button 
-          onClick={onNavigateBack}
-          className="back-button"
-        >
-          ← Back to Home
-        </button>
       </div>
 
       {/* Success/Error Messages */}

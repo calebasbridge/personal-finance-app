@@ -5,6 +5,133 @@ All notable changes to the Personal Finance App project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2025-08-09
+
+### 🐛 Fixed - Critical Transaction Amount Bug
+
+This release fixes a critical bug where debit transactions were incorrectly adding to envelope balances instead of subtracting from them.
+
+### 🎯 Issue Discovered
+**Problem**: Debit transactions were increasing envelope balances instead of decreasing them
+- Created $500 credit → Balance correctly increased to $500
+- Created $500 debit → Balance incorrectly increased to $1,000 (should have decreased to $0)
+
+### 🔍 Root Cause Analysis
+- **Database Storage**: All transaction amounts were stored as positive values regardless of type
+- **SQL Views**: The `envelope_balances_by_status` view SUMs all transaction amounts
+- **Math Error**: Positive debit amounts + positive credit amounts = incorrectly inflated balances
+- **Impact**: Envelope balances showed incorrect totals, making financial tracking unreliable
+
+### 📝 Technical Solution
+
+#### TransactionManagement.tsx Changes
+- **handleCreate**: Debits now use negative amounts (`-Math.abs(amount)`)
+- **handleUpdate**: Same fix applied for editing transactions
+- **Amount Display**: UI always shows positive values for user clarity
+- **handleEdit**: Converts stored negative values to positive for form display
+- **Transaction List**: Shows absolute values in the table
+
+#### Code Fix Applied
+```javascript
+// Before (BUG):
+amount: formData.amount, // Always positive
+
+// After (FIXED):
+amount: formData.type === 'debit' ? -Math.abs(formData.amount) : Math.abs(formData.amount),
+```
+
+### 🛠️ Fix Implementation
+- **Fix Script Created**: `fix_transaction_amounts\fix-transaction-amount-bug.bat`
+- **Automated Process**: Script backs up original file and applies comprehensive fix
+- **Build Integration**: Uses standard `simple-reliable-build.bat` after fix
+- **Documentation**: Complete fix documentation in `fix_transaction_amounts\FIX_DOCUMENTATION.md`
+
+### ✅ Results
+- **Debit Transactions**: Now correctly subtract from envelope balances
+- **Credit Transactions**: Continue to correctly add to envelope balances
+- **Math Integrity**: $500 credit + $500 debit = $0 balance ✅
+- **User Experience**: UI still shows positive values for clarity
+- **Database Accuracy**: Stored values now mathematically correct
+
+### 📊 Testing Verification
+- Test envelope with $0 balance ✅
+- Added $500 credit → Balance = $500 ✅
+- Added $500 debit → Balance = $0 ✅
+- Transaction amounts display as positive in UI ✅
+- Database stores correct signed values ✅
+
+### 🎯 User Impact
+- **Critical Fix**: Financial calculations now accurate
+- **Data Integrity**: Envelope balances reflect true financial state
+- **Confidence Restored**: Users can trust balance calculations
+- **Backward Compatibility**: Existing transactions may need correction
+
+### 📝 Important Notes
+- Existing transactions created before this fix may have incorrect signs
+- Users should verify and potentially recreate transactions created during testing
+- Future transactions will automatically use correct signed amounts
+- Standard build process (`simple-reliable-build.bat`) continues to work normally
+
+## [2.8.0] - 2025-08-09
+
+### 🔧 Fixed - UI Polish & Data Integrity Issues
+
+This release resolves three critical user-facing issues discovered during production use, improving both the user interface and data persistence.
+
+### 🎯 Issues Fixed
+1. **Duplicate Navigation Button** - Removed redundant "Back to Home" button from Envelope Management
+2. **Missing Envelope Names** - Fixed Credit Card Payment Wizard to display both envelope names and amounts
+3. **Transaction History Data Loss** - Resolved "Unknown Account" and "Unknown Envelope" display issues
+
+### 🔍 Root Causes Identified
+- **Duplicate Button**: Page header had unnecessary second navigation button
+- **Missing Names**: CSS/styling issue prevented envelope names from displaying
+- **Data Loss**: Component was trying to enrich data instead of using database-provided values
+
+### 📝 Technical Implementation
+
+#### EnvelopeManagement.tsx
+- Removed duplicate back button from page header
+- Kept only the top navigation bar button
+- Result: Clean, professional interface
+
+#### CreditCardPaymentWizard.tsx
+- Enhanced inline styles for cash envelope display
+- Added explicit styling for both name and amount
+- Used inline grid layout for better control
+- Result: Clear visibility of envelope names with amounts
+
+#### TransactionManagement.tsx
+- Fixed loadTransactions function to use database-provided names
+- Removed unnecessary data enrichment logic
+- Database JOINs already provide account/envelope names
+- Result: Historical data preserved correctly between sessions
+
+### 🛠️ Build System Refinement
+- Confirmed `simple-reliable-build.bat` as standard build process
+- Eliminated need for specialized build scripts
+- One build command works for all changes
+- Simplified development workflow
+
+### ✅ Quality Improvements
+- **User Experience**: Cleaner interface without duplicate controls
+- **Data Visibility**: All financial context visible in payment wizard
+- **Data Integrity**: Transaction history maintains complete relationships
+- **Code Quality**: Removed unnecessary data manipulation logic
+- **Build Simplicity**: Standardized on single build process
+
+### 📊 Testing Verification
+- Envelope Management: No duplicate buttons ✅
+- Credit Card Payment: Names and amounts visible ✅
+- Transaction History: Correct account/envelope names ✅
+- Build Process: Consistent and reliable ✅
+
+### 🎯 User Impact
+- Better navigation experience without confusion
+- Clear understanding of payment sources
+- Reliable historical transaction tracking
+- Confidence in data persistence
+
 ## [2.7.0] - 2025-08-09
 
 ### 🔍 CRITICAL DISCOVERY: UI Changes Must Use Inline Styles in .tsx Files
@@ -217,9 +344,11 @@ Build Process:
 
 ---
 
-**Current Version**: 2.7.0 - CSS/UI Discovery - Inline Styles Override CSS Files  
+**Current Version**: 2.9.0 - Critical Transaction Amount Bug Fixed  
 **Build Status**: ✅ Successfully Compiling with simple-reliable-build.bat  
-**UI Modification**: ✅ Process Confirmed - Edit .tsx files with inline styles  
+**UI Status**: ✅ All interface issues resolved - duplicate buttons removed, displays fixed  
+**Data Integrity**: ✅ Transaction amounts now correctly signed (debits negative, credits positive)  
+**Math Accuracy**: ✅ Envelope balances calculate correctly with proper debit/credit math  
 **Security Status**: ✅ Complete Password Protection System Operational  
-**Interface Status**: ✅ Ready for UI formatting fixes with correct approach  
-**Last Updated**: August 9, 2025
+**Production Status**: ✅ Application ready for daily use with critical math bug resolved  
+**Last Updated**: August 9, 2025 (Session 3)

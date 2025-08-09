@@ -440,11 +440,13 @@ const CreditCardPaymentWizard: React.FC = () => {
             {cashEnvelopes.length === 0 ? (
               <div className="text-muted">No cash envelopes with funds</div>
             ) : (
-              <div className="data-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
                 {cashEnvelopes.map(envelope => (
-                  <div key={envelope.id} className="finance-card" style={{ borderLeft: '4px solid #28a745' }}>
-                    <div className="font-semibold text-dark">{envelope.name}</div>
-                    <div className="balance-large text-success currency">
+                  <div key={envelope.id} className="finance-card" style={{ borderLeft: '4px solid #28a745', padding: '16px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                      {envelope.name}
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', fontFamily: 'monospace' }}>
                       ${envelope.current_balance.toFixed(2)}
                     </div>
                   </div>

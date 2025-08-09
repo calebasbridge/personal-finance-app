@@ -746,8 +746,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ onNavigat
       const transactionData = {
         account_id: formData.account_id,
         envelope_id: formData.envelope_id,
-        // FIX: Use negative amounts for debits, positive for credits
-        amount: formData.type === 'debit' ? -Math.abs(formData.amount) : Math.abs(formData.amount),
+        amount: formData.amount,
         date: formData.date,
         description: formData.description,
         status: formData.status,
@@ -800,8 +799,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ onNavigat
       const updateData = {
         account_id: formData.account_id,
         envelope_id: formData.envelope_id,
-        // FIX: Use negative amounts for debits, positive for credits
-        amount: formData.type === 'debit' ? -Math.abs(formData.amount) : Math.abs(formData.amount),
+        amount: formData.amount,
         date: formData.date,
         description: formData.description,
         status: formData.status,
@@ -1051,7 +1049,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ onNavigat
                   <input
                     type="number"
                     step="0.01"
-                    value={formData.amount === 0 ? '' : Math.abs(formData.amount)}
+                    value={formData.amount === 0 ? '' : formData.amount}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === '') {
@@ -1287,7 +1285,7 @@ const TransactionManagement: React.FC<TransactionManagementProps> = ({ onNavigat
                         <td>{transaction.account_name}</td>
                         <td>{transaction.envelope_name}</td>
                         <td>{transaction.description}</td>
-                        <td>{formatCurrency(Math.abs(transaction.amount))}</td>
+                        <td>{formatCurrency(transaction.amount)}</td>
                         <td>{getStatusBadge(transaction.status)}</td>
                         <td style={{ textTransform: 'capitalize' }}>{transaction.type}</td>
                         <td>{transaction.reference_number || '-'}</td>
