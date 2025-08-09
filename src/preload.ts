@@ -50,7 +50,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createBulk: (transactions: any[]) => ipcRenderer.invoke('transaction:createBulk', transactions),
     search: (searchTerm: string, limit?: number) => ipcRenderer.invoke('transaction:search', searchTerm, limit),
     getByStatus: (status: string) => ipcRenderer.invoke('transaction:getByStatus', status),
-    getByDateRange: (startDate: string, endDate: string) => ipcRenderer.invoke('transaction:getByDateRange', startDate, endDate)
+    getByDateRange: (startDate: string, endDate: string) => ipcRenderer.invoke('transaction:getByDateRange', startDate, endDate),
+    // Enhanced Transaction Management
+    getWithFilters: (filters: any) => ipcRenderer.invoke('transaction:getWithFilters', filters),
+    updateSafe: (id: number, updateData: any) => ipcRenderer.invoke('transaction:updateSafe', id, updateData),
+    deleteSafe: (id: number) => ipcRenderer.invoke('transaction:deleteSafe', id),
+    hasPaymentAllocations: (transactionId: number) => ipcRenderer.invoke('transaction:hasPaymentAllocations', transactionId),
+    getPaymentAllocationDetails: (transactionId: number) => ipcRenderer.invoke('transaction:getPaymentAllocationDetails', transactionId),
+    isSplitTransaction: (transactionId: number) => ipcRenderer.invoke('transaction:isSplitTransaction', transactionId)
   },
   // Account Transfer operations
   accountTransfers: {

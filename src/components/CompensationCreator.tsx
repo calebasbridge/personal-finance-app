@@ -35,6 +35,8 @@ interface PaycheckFormData {
 }
 
 export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClose }) => {
+  console.log('CompensationCreator rendering...');
+  
   // State management
   const [activeTab, setActiveTab] = useState<'calculator' | 'targets'>('calculator');
   const [fundingTargets, setFundingTargets] = useState<FundingTargetWithEnvelope[]>([]);
@@ -70,12 +72,16 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
   }, []);
 
   const loadInitialData = async () => {
+    console.log('Loading initial data...');
     try {
       setLoading(true);
       const api = getElectronAPI();
+      console.log('Got API:', api);
       
       // Load funding targets
+      console.log('Loading funding targets...');
       const targets = await api.compensation.getFundingTargetsWithEnvelopeInfo();
+      console.log('Funding targets loaded:', targets);
       setFundingTargets(targets);
 
       // Load cash envelopes for target creation
@@ -89,6 +95,7 @@ export const CompensationCreator: React.FC<CompensationCreatorProps> = ({ onClos
       // Run initial calculation
       await calculateCompensation(nextDate);
     } catch (err) {
+      console.error('Error loading data:', err);
       setError(`Failed to load data: ${err}`);
     } finally {
       setLoading(false);

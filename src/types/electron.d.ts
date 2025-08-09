@@ -50,6 +50,34 @@ interface TransactionsAPI {
   search: (searchTerm: string, limit?: number) => Promise<any[]>;
   getByStatus: (status: string) => Promise<any[]>;
   getByDateRange: (startDate: string, endDate: string) => Promise<any[]>;
+  // Enhanced Transaction Management
+  getWithFilters: (filters: {
+    accountId?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    searchTerm?: string;
+    limit?: number;
+    offset?: number;
+  }) => Promise<{ transactions: any[]; totalCount: number }>;
+  updateSafe: (id: number, updateData: any) => Promise<{
+    success: boolean;
+    transaction?: any;
+    warnings: string[];
+    error?: string;
+  }>;
+  deleteSafe: (id: number) => Promise<{
+    success: boolean;
+    warnings: string[];
+    error?: string;
+  }>;
+  hasPaymentAllocations: (transactionId: number) => Promise<boolean>;
+  getPaymentAllocationDetails: (transactionId: number) => Promise<any[]>;
+  isSplitTransaction: (transactionId: number) => Promise<{
+    isSplit: boolean;
+    originalAmount?: number;
+    originalDate?: string;
+  }>;
 }
 
 interface AccountTransfersAPI {

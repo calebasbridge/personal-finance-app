@@ -1,0 +1,46 @@
+App Build and Launch Instructions
+
+New Scripts to Use:
+
+simple-reliable-build.bat - Simplest, most reliable
+
+No fancy formatting
+Clear error messages
+Just works
+
+
+ultra-reliable-build-v2.bat - Fixed version of ultra-reliable
+
+No Unicode characters
+Proper file checking
+Still has nice formatting
+
+
+debug-build.bat - For troubleshooting
+
+Shows detailed output
+Lists file sizes
+Helps identify issues
+
+
+dev-mode-v2.bat - Fixed dev mode
+
+No Unicode characters
+Better error checking
+Same hot reload functionality
+
+
+
+🎯 Recommended Usage:
+For normal builds:
+simple-reliable-build.bat
+For development with auto-reload:
+dev-mode-v2.bat
+If something seems wrong:
+debug-build.bat
+✅ Why These Are Better:
+
+No character encoding issues - Pure ASCII text
+Proper error checking - Actually detects missing files correctly
+Simpler is better - Less that can go wrong
+Clear output - You can see exactly what's happening

@@ -42,13 +42,16 @@ export class TransactionDatabase {
         amount REAL NOT NULL,
         date DATETIME NOT NULL,
         status TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'debit',
         description TEXT,
+        reference_number TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
         FOREIGN KEY (envelope_id) REFERENCES envelopes (id) ON DELETE CASCADE,
         CHECK (amount != 0),
-        CHECK (status IN ('not_posted', 'pending', 'cleared', 'unpaid', 'paid'))
+        CHECK (status IN ('not_posted', 'pending', 'cleared', 'unpaid', 'paid')),
+        CHECK (type IN ('debit', 'credit', 'transfer', 'payment'))
       )
     `;
 
@@ -176,8 +179,8 @@ export class TransactionDatabase {
     }
 
     const stmt = this.db.prepare(`
-      INSERT INTO transactions (account_id, envelope_id, amount, date, status, description)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO transactions (account_id, envelope_id, amount, date, status, type, description, reference_number)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -186,7 +189,9 @@ export class TransactionDatabase {
       transaction.amount,
       transaction.date,
       transaction.status,
-      transaction.description || null
+      transaction.type || 'debit',
+      transaction.description || null,
+      transaction.reference_number || null
     );
 
     if (result.changes === 0) {
@@ -281,9 +286,28 @@ export class TransactionDatabase {
       }
     }
 
+    // If account_id or envelope_id is being updated, validate the relationship
+    if (updates.account_id || updates.envelope_id) {
+      const accountId = updates.account_id || existing.account_id;
+      const envelopeId = updates.envelope_id || existing.envelope_id;
+      
+      const envelope = this.db.prepare('SELECT account_id FROM envelopes WHERE id = ?').get(envelopeId) as { account_id: number };
+      if (!envelope || envelope.account_id !== accountId) {
+        throw new Error('Envelope does not belong to the specified account');
+      }
+    }
+
     const fields = [];
     const values = [];
 
+    if (updates.account_id !== undefined) {
+      fields.push('account_id = ?');
+      values.push(updates.account_id);
+    }
+    if (updates.envelope_id !== undefined) {
+      fields.push('envelope_id = ?');
+      values.push(updates.envelope_id);
+    }
     if (updates.amount !== undefined) {
       fields.push('amount = ?');
       values.push(updates.amount);
@@ -299,6 +323,14 @@ export class TransactionDatabase {
     if (updates.description !== undefined) {
       fields.push('description = ?');
       values.push(updates.description);
+    }
+    if (updates.type !== undefined) {
+      fields.push('type = ?');
+      values.push(updates.type);
+    }
+    if (updates.reference_number !== undefined) {
+      fields.push('reference_number = ?');
+      values.push(updates.reference_number);
     }
 
     if (fields.length === 0) {
@@ -320,6 +352,11 @@ export class TransactionDatabase {
   }
 
   deleteTransaction(id: number): boolean {
+    const existing = this.getTransactionById(id);
+    if (!existing) {
+      return false;
+    }
+
     const stmt = this.db.prepare('DELETE FROM transactions WHERE id = ?');
     const result = stmt.run(id);
     return result.changes > 0;
@@ -428,8 +465,8 @@ export class TransactionDatabase {
   // Bulk Operations
   createBulkTransactions(transactions: TransactionInput[]): Transaction[] {
     const createStmt = this.db.prepare(`
-      INSERT INTO transactions (account_id, envelope_id, amount, date, status, description)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO transactions (account_id, envelope_id, amount, date, status, type, description, reference_number)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const results: Transaction[] = [];
@@ -457,7 +494,9 @@ export class TransactionDatabase {
           transaction.amount,
           transaction.date,
           transaction.status,
-          transaction.description || null
+          transaction.type || 'debit',
+          transaction.description || null,
+          transaction.reference_number || null
         );
 
         const created = this.getTransactionById(result.lastInsertRowid as number)!;
@@ -525,7 +564,250 @@ export class TransactionDatabase {
     `);
     return stmt.all(startDate, endDate) as TransactionWithDetails[];
   }
+
+  // Enhanced Transaction Management Methods
+  
+  // Check if transaction has payment allocations (for credit card payments)
+  hasPaymentAllocations(transactionId: number): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT COUNT(*) as count 
+        FROM payment_allocations pa
+        JOIN credit_card_payments ccp ON pa.payment_id = ccp.id
+        WHERE pa.transaction_id = ?
+      `);
+      const result = stmt.get(transactionId) as { count: number };
+      return result.count > 0;
+    } catch (error) {
+      // If payment_allocations table doesn't exist, return false
+      return false;
+    }
+  }
+
+  // Get payment allocation details for a transaction
+  getPaymentAllocationDetails(transactionId: number): any[] {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT 
+          pa.*,
+          ccp.date as payment_date,
+          ccp.description as payment_description,
+          a.name as source_account_name,
+          e.name as source_envelope_name
+        FROM payment_allocations pa
+        JOIN credit_card_payments ccp ON pa.payment_id = ccp.id
+        JOIN accounts a ON ccp.source_account_id = a.id
+        JOIN envelopes e ON pa.source_envelope_id = e.id
+        WHERE pa.transaction_id = ?
+        ORDER BY ccp.date DESC
+      `);
+      return stmt.all(transactionId);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  // Check if transaction is from a split (partial payment)
+  isSplitTransaction(transactionId: number): { isSplit: boolean; originalAmount?: number; originalDate?: string } {
+    const transaction = this.getTransactionById(transactionId);
+    if (!transaction) {
+      return { isSplit: false };
+    }
+
+    // Check if this transaction has a description indicating it's from a split
+    // This is a simple check - you might want to add a dedicated split_transactions table
+    if (transaction.description && transaction.description.includes('(Split from')) {
+      // Extract original amount from description if present
+      const match = transaction.description.match(/\(Split from \$([\d,\.]+) on ([\d-]+)\)/);
+      if (match) {
+        return {
+          isSplit: true,
+          originalAmount: parseFloat(match[1].replace(',', '')),
+          originalDate: match[2]
+        };
+      }
+      return { isSplit: true };
+    }
+
+    return { isSplit: false };
+  }
+
+  // Enhanced filtering with pagination
+  getTransactionsWithFilters(options: {
+    accountId?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: TransactionStatus;
+    searchTerm?: string;
+    limit?: number;
+    offset?: number;
+  }): { transactions: TransactionWithDetails[]; totalCount: number } {
+    let whereConditions = [];
+    let params = [];
+    
+    if (options.accountId) {
+      whereConditions.push('t.account_id = ?');
+      params.push(options.accountId);
+    }
+    
+    if (options.startDate && options.endDate) {
+      whereConditions.push('t.date BETWEEN ? AND ?');
+      params.push(options.startDate, options.endDate);
+    }
+    
+    if (options.status) {
+      whereConditions.push('t.status = ?');
+      params.push(options.status);
+    }
+    
+    if (options.searchTerm) {
+      whereConditions.push('(t.description LIKE ? OR a.name LIKE ? OR e.name LIKE ?)');
+      const searchPattern = `%${options.searchTerm}%`;
+      params.push(searchPattern, searchPattern, searchPattern);
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
+    // Get total count
+    const countStmt = this.db.prepare(`
+      SELECT COUNT(*) as count
+      FROM transactions t
+      JOIN accounts a ON t.account_id = a.id
+      JOIN envelopes e ON t.envelope_id = e.id
+      ${whereClause}
+    `);
+    const countResult = countStmt.get(...params) as { count: number };
+    
+    // Get transactions with pagination
+    const limit = options.limit || 50;
+    const offset = options.offset || 0;
+    
+    const dataStmt = this.db.prepare(`
+      SELECT 
+        t.*,
+        a.name as account_name,
+        a.type as account_type,
+        e.name as envelope_name,
+        e.type as envelope_type
+      FROM transactions t
+      JOIN accounts a ON t.account_id = a.id
+      JOIN envelopes e ON t.envelope_id = e.id
+      ${whereClause}
+      ORDER BY t.date DESC, t.created_at DESC
+      LIMIT ? OFFSET ?
+    `);
+    
+    const transactions = dataStmt.all(...params, limit, offset) as TransactionWithDetails[];
+    
+    return {
+      transactions,
+      totalCount: countResult.count
+    };
+  }
+
+  // Safe transaction update with validation and warnings
+  updateTransactionSafe(id: number, updates: UpdateTransactionData): {
+    success: boolean;
+    transaction?: Transaction;
+    warnings: string[];
+    error?: string;
+  } {
+    const warnings: string[] = [];
+    
+    try {
+      // Check for payment allocations
+      if (this.hasPaymentAllocations(id)) {
+        warnings.push('This transaction has credit card payment allocations. Editing may affect payment records.');
+      }
+      
+      // Check if it's a split transaction
+      const splitInfo = this.isSplitTransaction(id);
+      if (splitInfo.isSplit) {
+        warnings.push(`This transaction is part of a split from ${splitInfo.originalAmount || 'unknown'} on ${splitInfo.originalDate || 'unknown date'}.`);
+      }
+      
+      // Perform the update
+      const transaction = this.updateTransaction(id, updates);
+      
+      return {
+        success: true,
+        transaction,
+        warnings
+      };
+    } catch (error) {
+      return {
+        success: false,
+        warnings,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  // Safe transaction delete with validation and warnings
+  deleteTransactionSafe(id: number): {
+    success: boolean;
+    warnings: string[];
+    error?: string;
+  } {
+    const warnings: string[] = [];
+    
+    try {
+      // Check for payment allocations
+      if (this.hasPaymentAllocations(id)) {
+        warnings.push('This transaction has credit card payment allocations. Deleting will affect payment records.');
+      }
+      
+      // Check if it's a split transaction
+      const splitInfo = this.isSplitTransaction(id);
+      if (splitInfo.isSplit) {
+        warnings.push(`This transaction is part of a split from ${splitInfo.originalAmount || 'unknown'} on ${splitInfo.originalDate || 'unknown date'}.`);
+      }
+      
+      // Perform the delete
+      const success = this.deleteTransaction(id);
+      
+      return {
+        success,
+        warnings
+      };
+    } catch (error) {
+      return {
+        success: false,
+        warnings,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
 }
 
 // Export singleton instance - but don't instantiate database connection yet
 export const transactionDatabase = new TransactionDatabase();
+
+// Export additional types for transaction management
+export interface TransactionFilters {
+  accountId?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: TransactionStatus;
+  searchTerm?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface TransactionUpdateResult {
+  success: boolean;
+  transaction?: Transaction;
+  warnings: string[];
+  error?: string;
+}
+
+export interface TransactionDeleteResult {
+  success: boolean;
+  warnings: string[];
+  error?: string;
+}
+
+export interface PaginatedTransactions {
+  transactions: TransactionWithDetails[];
+  totalCount: number;
+}

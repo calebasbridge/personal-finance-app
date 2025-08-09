@@ -6,7 +6,7 @@
 .App {
   text-align: center;
   min-height: 100vh;
-  background-color: var(--gray-50);
+  background-color: #E3F2FD;  /* TEST: Light blue background - REMOVE THIS AFTER TESTING */
   font-family: var(--font-family);
 }
 

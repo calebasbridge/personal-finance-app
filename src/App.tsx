@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './styles/design-system.css';
+import './styles/formatting-fixes.css';
+import './styles/direct-fixes.css';
 import './App.css';
 import DatabaseTest from './components/DatabaseTest';
 import { EnvelopeTest } from './components/EnvelopeTest';
@@ -7,7 +9,7 @@ import TransactionTest from './components/TransactionTest';
 import BalanceIntegrityTest from './components/BalanceIntegrityTest';
 import PartialPaymentTest from './components/PartialPaymentTest';
 import CompensationCreatorTest from './components/CompensationCreatorTest';
-import TransactionEntry from './components/TransactionEntry';
+import TransactionManagement from './components/TransactionManagement';
 import EnvelopeTransfer from './components/EnvelopeTransfer';
 import EnvelopeManagement from './components/EnvelopeManagement';
 import AccountManagement from './pages/AccountManagement';
@@ -17,7 +19,7 @@ import ProfileIndicator from './components/ProfileIndicator';
 import ProfileManagementDialog from './components/ProfileManagementDialog';
 import DeveloperTools from './components/DeveloperTools';
 
-type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test' | 'transaction-test' | 'balance-test' | 'partial-payment-test' | 'compensation-creator-test' | 'transaction-entry' | 'envelope-transfer' | 'envelope-management' | 'credit-card-payment' | 'compensation-creator' | 'developer-tools';
+type CurrentView = 'home' | 'accounts' | 'database-test' | 'envelope-test' | 'transaction-test' | 'balance-test' | 'partial-payment-test' | 'compensation-creator-test' | 'transaction-management' | 'envelope-transfer' | 'envelope-management' | 'credit-card-payment' | 'compensation-creator' | 'developer-tools';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<CurrentView>('home');
@@ -92,8 +94,8 @@ const App: React.FC = () => {
         );
       case 'compensation-creator-test':
         return <CompensationCreatorTest onNavigateBack={() => setCurrentView('developer-tools')} />;
-      case 'transaction-entry':
-        return <TransactionEntry onNavigateBack={() => setCurrentView('home')} />;
+      case 'transaction-management':
+        return <TransactionManagement onNavigateBack={() => setCurrentView('home')} />;
       case 'envelope-transfer':
         return <EnvelopeTransfer onNavigateBack={() => setCurrentView('home')} />;
       case 'envelope-management':
@@ -186,10 +188,10 @@ const App: React.FC = () => {
                   alignItems: 'center'
                 }}>
                   <button 
-                    onClick={() => setCurrentView('transaction-entry')}
+                    onClick={() => setCurrentView('transaction-management')}
                     className="nav-btn nav-btn-primary"
                   >
-                    📝 Enter Transaction
+                    📝 Manage Transactions
                   </button>
                   
                   <button 

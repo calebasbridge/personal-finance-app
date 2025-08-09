@@ -111,6 +111,8 @@ export interface TransactionInput {
   date: string;
   status: TransactionStatus;
   description?: string;
+  type?: string;
+  reference_number?: string;
 }
 
 export interface TransactionWithDetails extends Transaction {
@@ -121,10 +123,14 @@ export interface TransactionWithDetails extends Transaction {
 }
 
 export interface UpdateTransactionData {
+  account_id?: number;
+  envelope_id?: number;
   amount?: number;
   date?: string;
   status?: TransactionStatus;
   description?: string;
+  type?: string;
+  reference_number?: string;
 }
 
 // Account Transfer Types

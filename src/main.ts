@@ -470,6 +470,55 @@ function setupIpcHandlers(): void {
     }
   });
 
+  // Enhanced Transaction Management IPC handlers
+  ipcMain.handle('transaction:getWithFilters', async (_, filters) => {
+    try {
+      return transactionDatabase.getTransactionsWithFilters(filters);
+    } catch (error) {
+      throw new Error(`Failed to get transactions with filters: ${error}`);
+    }
+  });
+
+  ipcMain.handle('transaction:updateSafe', async (_, id, updateData) => {
+    try {
+      return transactionDatabase.updateTransactionSafe(id, updateData);
+    } catch (error) {
+      throw new Error(`Failed to safely update transaction: ${error}`);
+    }
+  });
+
+  ipcMain.handle('transaction:deleteSafe', async (_, id) => {
+    try {
+      return transactionDatabase.deleteTransactionSafe(id);
+    } catch (error) {
+      throw new Error(`Failed to safely delete transaction: ${error}`);
+    }
+  });
+
+  ipcMain.handle('transaction:hasPaymentAllocations', async (_, transactionId) => {
+    try {
+      return transactionDatabase.hasPaymentAllocations(transactionId);
+    } catch (error) {
+      throw new Error(`Failed to check payment allocations: ${error}`);
+    }
+  });
+
+  ipcMain.handle('transaction:getPaymentAllocationDetails', async (_, transactionId) => {
+    try {
+      return transactionDatabase.getPaymentAllocationDetails(transactionId);
+    } catch (error) {
+      throw new Error(`Failed to get payment allocation details: ${error}`);
+    }
+  });
+
+  ipcMain.handle('transaction:isSplitTransaction', async (_, transactionId) => {
+    try {
+      return transactionDatabase.isSplitTransaction(transactionId);
+    } catch (error) {
+      throw new Error(`Failed to check if transaction is split: ${error}`);
+    }
+  });
+
   // Account Transfer IPC handlers
   ipcMain.handle('accountTransfer:create', async (_, transferData) => {
     try {
